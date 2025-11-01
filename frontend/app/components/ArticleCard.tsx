@@ -3,7 +3,6 @@ import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import Image from "next/image";
 import UserIcon from "./UserIcon"; // ★ 新しいアイコンをインポート
-import { Star, Share2, ThumbsUp } from "lucide-react"; // ★ Share2 (共有) アイコンを追加
 
 type ArticleCardProps = {
   article: Article;

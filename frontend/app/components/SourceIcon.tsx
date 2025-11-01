@@ -4,7 +4,6 @@ import {
   BrainCircuit,
   Building,
   Newspaper,
-  Users,
 } from "lucide-react";
 
 type Props = {
