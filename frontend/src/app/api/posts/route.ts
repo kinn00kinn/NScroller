@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 // Supabaseクライアントを初期化
 // 環境変数はVercelの管理画面で設定することを想定
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
