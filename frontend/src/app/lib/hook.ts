@@ -20,7 +20,7 @@ type ApiResponse = {
   hasMore: boolean;
 };
 
-const PAGE_SIZE = 10; // 1ページあたりの記事数
+const PAGE_SIZE = 20; // 1ページあたりの記事数
 
 // 2. 無限スクロールフック (SWRバージョン)
 export function useInfiniteFeed() {
