@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     const { data, error, count } = await supabase
       .from("articles")
       .select(
-        "id, title, article_url, published_at, source_name, image_url, summary",
+        "id, title, article_url, published_at, source_name, image_url",
         {
           count: "exact",
         }

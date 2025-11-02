@@ -42,9 +42,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             <h2 className="text-xl font-bold line-clamp-2">
               {article.title}
             </h2>
-            <p className="text-base text-gray-700 line-clamp-3">
-              {article.summary}
-            </p>
+            
           </div>
 
           {/* 中部: 画像 (あれば表示) */}
