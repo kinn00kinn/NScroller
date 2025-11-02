@@ -1,4 +1,4 @@
-import type { Article } from "@/app/lib/mockData"; // ★ Article型は mockData から
+import type { Article } from "@/app/lib/mockData";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import Image from "next/image";
@@ -46,25 +46,11 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             </span>
             <span className="flex-shrink-0">· {timeAgo}</span>{" "}
           </div>
-          {/* 中部: テキスト (タイトルと要約) */}{" "}
-          <div className="space-y-1">
-            {/* ★ 修正: 動的クラス適用 */}{" "}
-            <h2 className={`text-xl font-bold ${titleLineClamp}`}>
-              {article.title}{" "}
-            </h2>
-            {/* ★ 追加: 要約（summary）があれば表示 */}
-            {hasSummary && (
-              <p className="text-gray-700 line-clamp-2">
-                {" "}
-                {/* 要約は2行まで */}
-                {article.summary}
-              </p>
-            )}{" "}
-          </div>
-          {/* 中部: 画像 (あれば表示) */}{" "}
+          {/* ★ 修正: 画像 (あれば表示) をテキストの前に移動 */}{" "}
           {article.image_url && (
-            <div className="mt-3 w-full border-2 border-black flex items-center justify-center overflow-hidden rounded-lg">
+            <div className="mb-2 w-full border-2 border-black flex items-center justify-center overflow-hidden rounded-lg">
               {" "}
+              {/* マージンを mt-3 から mb-2 に変更 */}{" "}
               <Image
                 src={article.image_url}
                 alt={article.title}
@@ -74,10 +60,20 @@ export default function ArticleCard({ article }: ArticleCardProps) {
               />{" "}
             </div>
           )}
-          {/* 下部: アクションボタン (コメントアウト) */}{" "}
-          {/* <div className="mt-4 flex items-center space-x-4 text-black">
-            ...
-   </div> */}{" "}
+          {/* 中部: テキスト (タイトルと要約) */}{" "}
+          <div className="space-y-1">
+            {/* ★ 修正: 動的クラス適用 */}{" "}
+            <h2 className={`text-xl font-bold ${titleLineClamp}`}>
+              {article.title}{" "}
+            </h2>
+            {/* ★ 追加: 要約（summary）があれば表示 */}{" "}
+            {hasSummary && (
+              <p className="text-gray-700 line-clamp-2">
+                {/* 要約は2行まで */}
+                {article.summary}{" "}
+              </p>
+            )}{" "}
+          </div>{" "}
         </div>{" "}
       </div>{" "}
     </a>
