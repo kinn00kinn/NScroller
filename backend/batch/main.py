@@ -9,11 +9,20 @@ from datetime import datetime
 load_dotenv()
 
 # --- 定数定義 ---
-# 本来は `全体要件定義.md` から取得するが、一旦ダミーを定義
-# 出典: https://note.com/info/rss.html
+# `全体要件定義.md` の「4.2. 情報源 (RSSフィード) 一覧」から取得
 RSS_FEEDS = [
-    "https://note.com/rss/n/n0b3434c3a2a4", # サンプル: noteのRSS
-    "https://feeds.feedburner.com/Publickey" # サンプル: Publickey
+    "https://openai.com/news/rss.xml",            # No.1: OpenAI Blog
+    "https://deepmind.com/blog/feed/basic/",      # No.2: Google DeepMind Blog
+    "https://huggingface.co/blog/feed.xml",       # No.3: Hugging Face Blog
+    "https://engineering.fb.com/feed/",           # No.4: Meta Engineering (AI)
+    "https://cloudblog.withgoogle.com/rss/",      # No.5: Google Cloud (AI/ML)
+    "https://zenn.dev/topics/ai/feed",            # No.6: Zenn (AI タグ)
+    "https://zenn.dev/topics/llm/feed",           # No.7: Zenn (LLM タグ)
+    "https://qiita.com/tags/ai/feed",             # No.8: Qiita (AI タグ)
+    "https://qiita.com/tags/llm/feed",            # No.9: Qiita (LLM タグ)
+    "https://qiita.com/tags/machinelearning/feed",# No.10: Qiita (MachineLearning)
+    "https://arxiv.org/rss/cs.AI",                # No.11: arXiv (cs.AI)
+    "https://arxiv.org/rss/cs.CL",                # No.12: arXiv (cs.CL)
 ]
 
 # --- Supabaseクライアントの初期化 ---
