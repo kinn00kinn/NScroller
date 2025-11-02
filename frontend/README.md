@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# NScroller - フロントエンド
 
-First, run the development server:
+このリポジトリは、「Niche Scroller (AI Edition)」のフロントエンド機能を管理します。
+Next.js (App Router) で構築されており、Vercelへのホスティングを想定しています。
+
+## 1. 機能
+
+-   AI関連ニュースの無限スクロール表示
+-   バックエンドが提供するデータ提供API (`/api/posts`)
+
+## 2. セットアップ
+
+1.  **リポジトリのクローン**
+
+2.  **Node.js環境の構築**
+    Node.js 18.17以上を推奨します。
+
+3.  **依存関係のインストール**
+    `frontend` ディレクトリに移動し、以下のコマンドを実行します。
+    ```bash
+    npm install
+    ```
+
+4.  **環境変数の設定**
+    `frontend` ディレクトリに `.env.local` という名前のファイルを作成し、Supabaseプロジェクトの情報を記述します。
+
+    ```
+    # .env.local
+    NEXT_PUBLIC_SUPABASE_URL="YOUR_SUPABASE_URL"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
+    ```
+    - `YOUR_SUPABASE_URL`: SupabaseプロジェクトのURL。
+    - `YOUR_SUPABASE_ANON_KEY`: Supabaseプロジェクトの `anon` (public) キー。
+
+## 3. ローカルでの開発
+
+以下のコマンドで、開発サーバーを起動します。
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで `http://localhost:3000` を開いてください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 4. データ提供API
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+このプロジェクトには、記事データを取得するためのAPIルートが含まれています。
 
-## Learn More
+-   **エンドポイント**: `GET /api/posts`
+-   **クエリパラメータ**:
+    -   `page` (数値, オプショナル, デフォルト: 1): 取得ページ番号
+    -   `limit` (数値, オプショナル, デフォルト: 20): 1ページあたりの件数
+-   **レスポンス**: 記事オブジェクトの配列
 
-To learn more about Next.js, take a look at the following resources:
+ローカル開発サーバー実行中、`http://localhost:3000/api/posts?page=1&limit=5` のようなURLで動作を確認できます。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 5. デプロイ (Vercel)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+このNext.jsプロジェクトは、Vercelにデプロイすることを推奨します。
 
-## Deploy on Vercel
+1.  **Vercelプロジェクトの作成**
+    GitHubリポジトリをVercelにインポートして、新しいプロジェクトを作成します。
+    -   **Framework Preset**: `Next.js`
+    -   **Root Directory**: `frontend`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2.  **環境変数の設定**
+    Vercelプロジェクトの `Settings` > `Environment Variables` に、以下の2つの環境変数を設定します。
+    -   `NEXT_PUBLIC_SUPABASE_URL`: あなたのSupabaseプロジェクトURL
+    -   `NEXT_PUBLIC_SUPABASE_ANON_KEY`: あなたのSupabase `anon` キー
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+上記設定後、Vercelが自動でビルドとデプロイを実行します。

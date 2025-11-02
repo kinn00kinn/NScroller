@@ -1,0 +1,25 @@
+name: Collect Articles Batch
+       on:
+         schedule:
+           - cron: "0 * * * *"
+         workflow_dispatch:
+     jobs:
+       collect:
+         runs-on: ubuntu-latest
+         defaults:
+           run:
+             working-directory: ./backend
+         steps:
+           - uses: actions/checkout@v4
+           - uses: actions/setup-python@v5
+           - run: pip install -r batch/requirements.txt
+           - env:
+               SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+               SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+             run: python batch/main.py
+           - run: pip install -r batch/requirements.txt
+           - env:
+               SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+               SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+             run: python batch/main.py
+           - run: pip install -r batch/requirements.txt
