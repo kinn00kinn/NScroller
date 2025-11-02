@@ -37,7 +37,7 @@ export function useInfiniteFeed() {
         return null;
       } // 次のページのURLを返す
 
-      return `/api/articles?page=${pageIndex + 1}&limit=${PAGE_SIZE}`;
+      return `/api/posts?page=${pageIndex + 1}&limit=${PAGE_SIZE}`;
     }, fetcher); // 取得したデータを単一の配列に加工
 
   // --- 修正: データ加工ロジックを useMemo で囲み、内容を強化 ---
