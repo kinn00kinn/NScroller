@@ -35,9 +35,12 @@ MIN_IMAGE_BYTES = 512
 HTTP_TIMEOUT = 10
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
 
-# --- helpers ---
+# --- グローバル Session を使う（Cookie を保持してブラウザっぽくアクセス） ---
+SESSION = requests.Session()
+SESSION.headers.update({"User-Agent": USER_AGENT, "Accept-Language": "ja,en-US;q=0.9,en;q=0.8"})
 
 
+# --- ヘルパー関数 ---
 def is_google_cache_url(u: Optional[str]) -> bool:
     if not u:
         return False
@@ -45,14 +48,20 @@ def is_google_cache_url(u: Optional[str]) -> bool:
     return any(x in u for x in ("lh3.googleusercontent.com", "googleusercontent", "gstatic.com"))
 
 
-def fetch_html(url: str, timeout: int = HTTP_TIMEOUT) -> Optional[Tuple[str, BeautifulSoup]]:
+def fetch_html(url: str, referer: Optional[str] = None, timeout: int = HTTP_TIMEOUT) -> Optional[Tuple[str, BeautifulSoup, requests.Response]]:
+    """
+    Session を使って GET。最終 URL, BeautifulSoup, 元の Response を返す。
+    referer が与えられればヘッダにセットしてアクセス（Google 経由の遷移対策）
+    """
     try:
-        headers = {"User-Agent": USER_AGENT}
-        resp = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
+        headers = {}
+        if referer:
+            headers["Referer"] = referer
+        resp = SESSION.get(url, headers=headers, timeout=timeout, allow_redirects=True)
         resp.raise_for_status()
         final = resp.url
         soup = BeautifulSoup(resp.text, "html.parser")
-        return final, soup
+        return final, soup, resp
     except requests.RequestException as e:
         print(f"  [fetch_html エラー] {url} : {e}")
         return None
@@ -64,10 +73,9 @@ def validate_image_url(img_url: str, timeout: int = 6) -> bool:
         if not parsed.scheme:
             return False
         headers = {"User-Agent": USER_AGENT}
-
-        # HEAD first
+        # HEAD
         try:
-            head = requests.head(img_url, timeout=timeout, headers=headers, allow_redirects=True)
+            head = SESSION.head(img_url, timeout=timeout, headers=headers, allow_redirects=True)
             if head.status_code >= 400:
                 head = None
         except requests.RequestException:
@@ -86,12 +94,12 @@ def validate_image_url(img_url: str, timeout: int = 6) -> bool:
                 return True
 
         # fallback GET
-        g = requests.get(img_url, timeout=timeout, headers=headers, stream=True)
+        g = SESSION.get(img_url, timeout=timeout, headers=headers, stream=True)
         if g.status_code >= 400:
             g.close()
             return False
-        ct = g.headers.get("Content-Type", "")
-        if not (ct and ct.startswith("image/")):
+        ct = g.headers.get("Content-Type", "") or ""
+        if not ct.startswith("image/"):
             g.close()
             return False
         cl = g.headers.get("Content-Length")
@@ -102,9 +110,9 @@ def validate_image_url(img_url: str, timeout: int = 6) -> bool:
                     return False
             except Exception:
                 pass
-        # read small chunk
-        chunk = next(g.iter_content(1024), b"")
-        if len(chunk) < 16:
+        # read little chunk to ensure content
+        first_chunk = next(g.iter_content(1024), b"")
+        if len(first_chunk) < 16:
             g.close()
             return False
         g.close()
@@ -114,42 +122,30 @@ def validate_image_url(img_url: str, timeout: int = 6) -> bool:
         return False
 
 
-# --- Google News 元記事解決ロジック強化 ---
+# --- Google リダイレクト・アンラップ ---
 
 
 def unwrap_google_redirect(href: str) -> Optional[str]:
-    """
-    Googleのリダイレクト形式やAMPプロキシをアンラップする。
-    例:
-      - https://www.google.com/url?q=https%3A%2F%2Fexample.com%2F...
-      - https://www.google.com/amp/s/example.com/...
-      - /amp/s/example.com/...
-    """
     if not href:
         return None
-    # full URL?
     parsed = urlparse(href)
     qs = parse_qs(parsed.query)
     # google.com/url?q=...
     if parsed.netloc.endswith("google.com") and "q" in qs:
-        q = qs.get("q")[0]
-        return unquote(q)
-    # google redirect param named 'url' (some variants)
+        return unquote(qs.get("q")[0])
     if parsed.netloc.endswith("google.com") and "url" in qs:
         return unquote(qs.get("url")[0])
-    # AMP proxy: contains '/amp/s/' or '/amp/'
-    # e.g. https://www.google.com/amp/s/www.example.com/...
-    match = re.search(r"/amp/(?:s/)?(https?://[^/]+/?.*)", href)
-    if match:
-        return match.group(1)
-    # news.google.com/__amp/s/www.example.com/...
+    # AMP proxy patterns: /amp/s/ or /amp/
+    m = re.search(r"/amp/(?:s/)?(https?://[^/]+/?.*)", href)
+    if m:
+        return m.group(1)
     if "/__amp/s/" in href:
         idx = href.find("/__amp/s/")
         candidate = href[idx + len("/__amp/s/") :]
         if candidate.startswith("http"):
             return candidate
         return "https://" + candidate
-    # query param in non-google host that contains url=
+    # query param containing url=
     if "url=" in parsed.query:
         q = parse_qs(parsed.query).get("url")
         if q:
@@ -158,73 +154,46 @@ def unwrap_google_redirect(href: str) -> Optional[str]:
 
 
 def extract_urls_from_soup(soup: BeautifulSoup, base_url: str) -> List[str]:
-    """
-    soupの中から href/src/data-*属性などに含まれるURLを幅広く抽出する
-    """
     urls = set()
-
-    # 1) hrefs
     for a in soup.find_all("a", href=True):
         href = a["href"]
         if href:
-            # make absolute if relative
-            abs_href = urljoin(base_url, href)
-            urls.add(abs_href)
-
-    # 2) src attributes
+            urls.add(urljoin(base_url, href))
     for tag in soup.find_all(src=True):
         src = tag["src"]
         if src:
-            abs_src = urljoin(base_url, src)
-            urls.add(abs_src)
-
-    # 3) data-* attributes that might contain URLs
+            urls.add(urljoin(base_url, src))
+    # data-* attributes
     for tag in soup.find_all():
         for attr, val in tag.attrs.items():
             if isinstance(val, str) and ("http://" in val or "https://" in val):
-                urls.add(val)
-
-    # 4) script/text内のURL（AF_initDataCallback 等に埋められていることがある）
+                urls.add(urljoin(base_url, val))
+    # script/text URL extraction
     text = soup.get_text(separator=" ")
-    urls_in_text = re.findall(r"https?://[^\s'\"<>]+", text)
-    for u in urls_in_text:
+    for u in re.findall(r"https?://[^\s'\"<>]+", text):
         urls.add(u)
-
     return list(urls)
 
 
 def score_candidate_url(u: str, base_netloc: str) -> int:
-    """
-    URL候補の簡易スコアリング
-    - googleドメインは除外（呼び出し側で除外済みが望ましい）
-    - 同一ドメインよりも外部ニュースドメインの方が高得点
-    - パス長（記事っぽさ）を考慮
-    """
     net = urlparse(u).netloc.lower()
     if not u.startswith("http"):
         return 0
     if "google" in net:
         return 0
     score = 0
-    # prefer different netlocs from base (if base is news.google.com)
     if net != base_netloc:
         score += 10
-    # penalize top-level domains that look like CDNs or images (example: si0, lh3, gstatic)
     if any(x in net for x in ("lh3.", "googleusercontent", "gstatic", "akamai", "cdn")):
         score -= 50
-    # path length positive
     path = urlparse(u).path or ""
     score += min(len(path), 100)
-    # if contains obvious article tokens
     if re.search(r"/news/|/article|/articles/|/202\d/|/20\d{2}/|/topics/|/topics/", path):
         score += 20
     return score
 
 
 def resolve_google_news_original(final_url: str, soup: BeautifulSoup) -> Optional[str]:
-    """
-    強化版: 中間ページからあらゆる手段で元記事URLを探す
-    """
     base_netloc = urlparse(final_url).netloc.lower()
 
     # 1) og:url / canonical
@@ -269,58 +238,48 @@ def resolve_google_news_original(final_url: str, soup: BeautifulSoup) -> Optiona
     amp = soup.find("link", rel="amphtml")
     if amp and amp.get("href"):
         cand = urljoin(final_url, amp["href"])
-        # try to unwrap if it's google amp proxy
         unwrapped = unwrap_google_redirect(cand) or cand
-        if unwrapped:
-            if "google" not in urlparse(unwrapped).netloc:
-                print(f"  [解決候補] amphtml -> {unwrapped}")
-                return unwrapped
-            else:
-                print(f"  [amphtmlはgoogleプロキシ, 候補として残す]: {unwrapped}")
+        if unwrapped and "google" not in urlparse(unwrapped).netloc:
+            print(f"  [解決候補] amphtml -> {unwrapped}")
+            return unwrapped
+        else:
+            print(f"  [amphtml候補(googleプロキシ)]: {unwrapped}")
 
-    # 4) find <a> href first pass: prefer non-google
+    # 4) try to unwrap many <a> and other urls
     candidates = []
     for a in soup.find_all("a", href=True):
         href = a["href"]
         if not href:
             continue
         abs_href = urljoin(final_url, href)
-        # unwrap google redirect style
         maybe = unwrap_google_redirect(abs_href) or abs_href
         candidates.append(maybe)
 
-    # 5) extract many urls from attributes and text (script etc.)
     extra_urls = extract_urls_from_soup(soup, final_url)
-    for u in extra_urls:
-        candidates.append(u)
+    candidates.extend(extra_urls)
 
-    # normalize and dedupe
+    # dedupe/norm
     normed = []
     seen = set()
     for u in candidates:
         if not u or not isinstance(u, str):
             continue
-        # remove fragments
         u = u.split("#")[0]
         if u in seen:
             continue
         seen.add(u)
         normed.append(u)
 
-    # score and pick best non-google candidate
     scored = []
     for u in normed:
-        # skip google domains
-        net = urlparse(u).netloc.lower()
         if not u.startswith("http"):
             continue
+        net = urlparse(u).netloc.lower()
         if "google" in net and "news.google.com" in base_netloc:
-            # accept google amp proxies only if we can unwrap
             unwrapped = unwrap_google_redirect(u)
             if unwrapped and "google" not in urlparse(unwrapped).netloc:
                 scored.append((unwrapped, score_candidate_url(unwrapped, base_netloc)))
             continue
-        # skip obvious image/CDN hosts
         if any(x in net for x in ("lh3.googleusercontent.com", "gstatic", "googleusercontent", "akamai", "cdn")):
             continue
         sc = score_candidate_url(u, base_netloc)
@@ -328,13 +287,12 @@ def resolve_google_news_original(final_url: str, soup: BeautifulSoup) -> Optiona
             scored.append((u, sc))
 
     if scored:
-        # sort by score desc
         scored.sort(key=lambda t: t[1], reverse=True)
         best, best_score = scored[0]
         print(f"  [解決候補選出] {best} (score={best_score})")
         return best
 
-    # final fallback: try to extract first non-google URL from page text
+    # last fallback: extract non-google url from page text
     text_urls = re.findall(r"https?://[^\s'\"<>]+", soup.get_text()[:20000])
     for u in text_urls:
         net = urlparse(u).netloc.lower()
@@ -346,41 +304,78 @@ def resolve_google_news_original(final_url: str, soup: BeautifulSoup) -> Optiona
     return None
 
 
-# --- 画像取得ロジック（OGP優先など） ---
+# --- 画像抽出ロジック ---
 
 
-def get_main_image(url: str) -> Optional[str]:
+def get_main_image(start_url: str) -> Optional[str]:
     tried = set()
-    queue = [(url, True)]
+    queue = [(start_url, True, None)]  # (url, allow_resolve_google_news, referer)
     while queue:
-        cur, allow_resolve = queue.pop(0)
-        if cur in tried:
+        cur_url, allow_resolve, referer = queue.pop(0)
+        if cur_url in tried:
             continue
-        tried.add(cur)
+        tried.add(cur_url)
 
-        fetched = fetch_html(cur)
+        print(f"  [fetch] {cur_url} (referer={referer})")
+        fetched = fetch_html(cur_url, referer=referer)
         if not fetched:
             continue
-        final_url, soup = fetched
+        final_url, soup, resp = fetched
         netloc = urlparse(final_url).netloc.lower()
 
-        # Google中間ページの解決（1段）
+        # meta refresh detection (自動追従)
+        meta_refresh = soup.find("meta", attrs={"http-equiv": re.compile("^refresh$", re.I)})
+        if meta_refresh and meta_refresh.get("content"):
+            # content="0; url=https://example.com/..."
+            m = re.search(r"url=(.+)", meta_refresh["content"], flags=re.I)
+            if m:
+                next_url = urljoin(final_url, m.group(1).strip().strip("'\""))
+                if next_url not in tried:
+                    print(f"  [meta refresh -> follow] {next_url}")
+                    queue.insert(0, (next_url, False, final_url))
+                    continue
+
+        # iframe redirect (よくあるパターン)
+        iframe = soup.find("iframe", src=True)
+        if iframe:
+            src = urljoin(final_url, iframe["src"])
+            if src not in tried:
+                print(f"  [iframe src -> follow] {src}")
+                queue.insert(0, (src, False, final_url))
+                continue
+
+        # JS-based redirect patterns in script text (simple heuristics)
+        script_text = " ".join([s.string or "" for s in soup.find_all("script") if s.string])
+        m = re.search(r"(?:location\.href|window\.location\.href|location\.replace|window\.location|location\.assign)\s*\(\s*['\"]([^'\"]+)['\"]\s*\)", script_text)
+        if m:
+            jsurl = urljoin(final_url, m.group(1))
+            if jsurl not in tried:
+                print(f"  [JS redirect -> follow] {jsurl}")
+                queue.insert(0, (jsurl, False, final_url))
+                continue
+
+        # If it's a Google middle page, try to resolve original
         if allow_resolve and ("news.google.com" in netloc or ("google" in netloc and "news" in final_url)):
             orig = resolve_google_news_original(final_url, soup)
             if orig and orig not in tried:
                 orig_abs = urljoin(final_url, orig)
                 print(f"  [中間ページ解決 -> 元記事へ再取得]: {orig_abs}")
-                queue.insert(0, (orig_abs, False))
+                queue.insert(0, (orig_abs, False, final_url))  # set referer to final_url (google)
                 continue
             else:
                 print("  [中間ページ] 元記事解決できず、そのページでOGP探索を継続します")
 
         # 1) OGP/Twitter/link rel=image_src
         meta_candidates = []
-        for tag, attr in [("meta", "og:image"), ("meta", "og:image:secure_url"), ("meta", "twitter:image")]:
-            node = soup.find("meta", **({"property": attr} if attr.startswith("og:") else {"name": attr}))
-            if node and node.get("content"):
-                meta_candidates.append(node["content"])
+        og = soup.find("meta", property="og:image")
+        if og and og.get("content"):
+            meta_candidates.append(og["content"])
+        og_secure = soup.find("meta", property="og:image:secure_url")
+        if og_secure and og_secure.get("content"):
+            meta_candidates.append(og_secure["content"])
+        tw = soup.find("meta", attrs={"name": "twitter:image"})
+        if tw and tw.get("content"):
+            meta_candidates.append(tw["content"])
         link_img = soup.find("link", rel="image_src")
         if link_img and link_img.get("href"):
             meta_candidates.append(link_img["href"])
@@ -396,7 +391,7 @@ def get_main_image(url: str) -> Optional[str]:
             else:
                 print(f"  [メタ画像は無効]: {img}")
 
-        # 2) JSON-LD images
+        # 2) JSON-LD
         for script in soup.find_all("script", type="application/ld+json"):
             try:
                 js = script.string
@@ -476,10 +471,8 @@ def extract_original_from_google_description(description_html: str) -> Optional[
         a = dsoup.find("a", href=True)
         if a:
             href = a["href"]
-            # 直接外部ならそのまま
             if href.startswith("http") and "google" not in urlparse(href).netloc:
                 return href
-            # それ以外は返して get_main_image 側でアンラップ/解決を試みる
             return href
     except Exception:
         pass
@@ -513,7 +506,6 @@ def process_feed_once(feed_url: str):
                     article_url = getattr(entry, "link", None)
                     print(f"  [Google News] descriptionなし。entry.linkを使用: {article_url}")
 
-                # RSS内サムネイルがあればフォールバック（ただしgoogle cache排除）
                 if hasattr(entry, "description") and entry.description:
                     dsoup = BeautifulSoup(entry.description, "html.parser")
                     img_tag = dsoup.find("img", src=True)
@@ -550,7 +542,6 @@ def process_feed_once(feed_url: str):
                 print("  [記事URL不明] -> スキップ")
                 continue
 
-            # 重複チェック
             if supabase:
                 existing = supabase.table("articles").select("id").eq("article_url", article_url).execute()
                 if existing.data:
