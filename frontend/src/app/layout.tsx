@@ -20,6 +20,12 @@ export const metadata: Metadata = {
   },
   description: siteDescription,
 
+  // ファビコン
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
+
   // --- OGP (Facebook, Slack, etc.) ---
   openGraph: {
     title: siteTitle,
