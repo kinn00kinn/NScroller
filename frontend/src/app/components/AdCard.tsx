@@ -6,7 +6,15 @@ export default function AdCard() {
   return (
     <div className="block w-full p-4 border-b-2 border-black bg-gray-50">
       <div className="flex items-center justify-center h-24">
-        <span className="text-sm font-bold text-gray-600">[ 広告募集中 ]</span>
+        {/* ★ 「Buy Me a Coffee」のリンクを追加 */}
+        <a
+          href="https://buymeacoffee.com/haruki10093" // あなたのBuy Me a CoffeeのURLに置き換えてください
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-bold text-purple-700 hover:underline"
+        >
+          Buy Me a Coffee
+        </a>
       </div>
     </div>
   );
