@@ -29,10 +29,14 @@ export default function ArticleCard({ article }: ArticleCardProps) {
   // ★ ネイティブ共有APIがサポートされているかどうかの状態
   const [canNativeShare, setCanNativeShare] = useState(false);
 
-  // ★ 修正: useState を useEffect に変更
+  // ★ 修正: "in" を使ってプロパティの存在をチェック (TypeScript linter 対策)
   // ブラウザ側でのみ navigator をチェックするために useEffect を使用
   useEffect(() => {
-    if (typeof navigator !== "undefined" && navigator.share) {
+    if (
+      typeof navigator !== "undefined" &&
+      "share" in navigator &&
+      "canShare" in navigator
+    ) {
       setCanNativeShare(true);
     }
   }, []); // ★ 空の依存配列でマウント時に一度だけ実行
@@ -78,9 +82,8 @@ export default function ArticleCard({ article }: ArticleCardProps) {
       url: article.article_url,
     };
 
-    // navigator.share が存在し、データが共有可能かチェック
-    // ★ canNativeShare (state) をチェックする
-    if (canNativeShare && navigator.canShare && navigator.canShare(shareData)) {
+    // ★ 修正: canNativeShare が true なら .canShare は存在するので、呼び出しのみ行う
+    if (canNativeShare && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData);
         // 共有が成功した（またはユーザーが閉じた）場合の処理
