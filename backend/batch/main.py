@@ -188,7 +188,7 @@ def process_newsapi(newsapi_key: str, query: str = "panda OR パンダ", max_pag
         return
     client = NewsApiClient(api_key=newsapi_key)
 
-    languages = ["ja", "en"]
+    languages = ["ja"]
     total_inserted = 0
 
     for lang in languages:
