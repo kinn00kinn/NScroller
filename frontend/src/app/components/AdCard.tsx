@@ -1,3 +1,7 @@
+import {
+  Coffee
+} from "lucide-react";
+
 /**
  * 広告を表示するためのダミーコンポーネント
  */
@@ -5,7 +9,9 @@ export default function AdCard() {
   // 広告カードは props を受け取らない (key のみ Timeline.tsx で渡される)
   return (
     <div className="block w-full p-4 border-b-2 border-black bg-gray-50">
+      <span>[広告募集]</span>
       <div className="flex items-center justify-center h-24">
+        <Coffee/>
         {/* ★ 「Buy Me a Coffee」のリンクを追加 */}
         <a
           href="https://buymeacoffee.com/haruki10093" // あなたのBuy Me a CoffeeのURLに置き換えてください

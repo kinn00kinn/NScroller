@@ -165,7 +165,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
           {/* ★ 左側: アイコン (黒枠とサイズ調整) */}
           <div className="flex-shrink-0 w-12 h-12 border-2 border-black rounded-full flex items-center justify-center bg-gray-100 overflow-hidden">
             {/* UserCircle を親要素のサイズいっぱいに広げる */}
-            <UserCircle size="100%" className="text-gray-500" strokeWidth={1.5} />
+            <UserCircle size="120%" className="text-gray-500" strokeWidth={1.5} />
           </div>
 
           {/* 右側: コンテンツ */}
