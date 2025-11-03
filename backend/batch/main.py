@@ -188,7 +188,14 @@ def process_newsapi(newsapi_key: str, query: str = "panda OR パンダ", max_pag
         return
     client = NewsApiClient(api_key=newsapi_key)
 
-    languages = ["ja"]
+    languages = ["ja", "en"]
+    # 変更後のクエリ
+    query = (
+        '(panda OR パンダ) '
+        'AND (baby OR cub OR zoo OR animal OR cute OR "giant panda" OR '
+        '赤ちゃん OR 動物園 OR かわいい OR 上野 OR 和歌山 OR 神戸 OR "アドベンチャーワールド") '
+        'NOT (software OR python OR data OR express OR antivirus OR library OR analysis)'
+    )
     total_inserted = 0
 
     for lang in languages:
