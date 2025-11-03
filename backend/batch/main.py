@@ -182,26 +182,46 @@ except Exception:
     NewsApiClient = None
 
 
-def process_newsapi(newsapi_key: str, query: str = "panda OR パンダ", max_pages: int = 3, page_size: int = 100):
+def process_newsapi(newsapi_key: str, query: str = "", max_pages: int = 3, page_size: int = 100):
+    """
+    かわいい動物ニュース収集版
+    - NewsAPI から「パンダ・猫・犬・レッサーパンダ・カワウソ・ハリネズミ」など
+      かわいい動物に関する記事を収集
+    - 「Python」「ソフトウェア」「分析」など誤検出されやすいIT系ワードを除外
+    """
+
     if not NewsApiClient:
         print("newsapi ライブラリが見つかりません。pip install newsapi-python を実行してください。")
         return
+
     client = NewsApiClient(api_key=newsapi_key)
 
-    languages = ["ja", "en"]
-    # 変更後のクエリ
+    # --- 検索クエリを可愛い動物特化に ---
     query = (
-        '(panda OR パンダ) '
-        'AND (baby OR cub OR zoo OR animal OR cute OR "giant panda" OR '
-        '赤ちゃん OR 動物園 OR かわいい OR 上野 OR 和歌山 OR 神戸 OR "アドベンチャーワールド") '
-        'NOT (software OR python OR data OR express OR antivirus OR library OR analysis)'
+        '('
+        'panda OR パンダ OR "giant panda" OR '
+        'cat OR 猫 OR ねこ OR kitten OR 子猫 OR '
+        'dog OR 犬 OR いぬ OR puppy OR 子犬 OR '
+        'red panda OR レッサーパンダ OR otter OR カワウソ OR '
+        'hedgehog OR ハリネズミ OR ferret OR フェレット OR rabbit OR うさぎ OR ウサギ '
+        ') '
+        'AND (cute OR かわいい OR adorable OR 動物 OR animal OR zoo OR 赤ちゃん OR baby OR cub OR 癒し OR "アドベンチャーワールド" OR 上野 OR 和歌山 OR 神戸) '
+        'NOT (software OR python OR data OR express OR antivirus OR library OR analysis OR programming OR code)'
     )
+
+    languages = ["ja", "en"]
     total_inserted = 0
 
     for lang in languages:
         for page in range(1, max_pages + 1):
             try:
-                res = client.get_everything(q=query, language=lang, page=page, page_size=page_size, sort_by="publishedAt")
+                res = client.get_everything(
+                    q=query,
+                    language=lang,
+                    page=page,
+                    page_size=page_size,
+                    sort_by="publishedAt"
+                )
             except Exception as e:
                 print(f"  [NewsAPI 取得失敗] lang={lang} page={page} : {e}")
                 break
@@ -215,7 +235,7 @@ def process_newsapi(newsapi_key: str, query: str = "panda OR パンダ", max_pag
                 if not url:
                     continue
 
-                # 既存チェック
+                # --- Supabase 既存チェック ---
                 if supabase:
                     try:
                         existing = supabase.table("articles").select("id").eq("article_url", url).execute()
@@ -230,6 +250,7 @@ def process_newsapi(newsapi_key: str, query: str = "panda OR パンダ", max_pag
                 image_url = item.get("urlToImage") or item.get("image")
                 source_name = (item.get("source") or {}).get("name") or ""
 
+                # --- 画像検証＆補完 ---
                 if image_url:
                     image_url = image_url.strip()
                     if not validate_image_url(image_url):
@@ -251,6 +272,7 @@ def process_newsapi(newsapi_key: str, query: str = "panda OR パンダ", max_pag
                 }
 
                 print(f"  新規記事追加予定: {article['title']} （image: {image_url}）")
+
                 if supabase:
                     try:
                         supabase.table("articles").insert(article).execute()
@@ -258,8 +280,8 @@ def process_newsapi(newsapi_key: str, query: str = "panda OR パンダ", max_pag
                     except Exception as e:
                         print(f"    [Supabase挿入エラー]: {e}")
 
-            # NewsAPI はレート制限があるため少し待つ
-            time.sleep(0.2)
+            # レート制限対策
+            time.sleep(0.3)
 
     print(f"完了: 挿入件数約 {total_inserted}")
 
