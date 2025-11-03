@@ -10,6 +10,7 @@ import {
   Twitter, // ★ Twitterアイコンをインポート
   Facebook, // ★ Facebookアイコンをインポート
   MessageSquare, // ★ LINEの代わりとしてMessageSquareをインポート
+  Send
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -226,7 +227,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
                   className="p-2 rounded-full transition-colors duration-150 text-black hover:bg-gray-200"
                   aria-label="共有"
                 >
-                  <Share2 size={18} />
+                  <Send size={18} />
                 </button>
               </div>
 
