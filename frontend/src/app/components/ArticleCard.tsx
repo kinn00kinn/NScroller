@@ -155,9 +155,9 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         className="block w-full p-4 border-b-2 border-black bg-white transition-colors duration-150 hover:bg-gray-50"
       >
         <div className="flex space-x-3">
-          {/* ★ 左側: アイコン (黒枠を追加) */}
+          {/* ★ 左側: アイコン (黒枠を追加 & strokeWidth 調整) */}
           <div className="flex-shrink-0 w-12 h-12 border-2 border-black rounded-full flex items-center justify-center bg-gray-100 overflow-hidden">
-            <UserCircle size={36} className="text-gray-500" />
+            <UserCircle size={36} className="text-gray-500" strokeWidth={1.5} /> {/* ★ strokeWidth を追加 */}
           </div>
 
           {/* 右側: コンテンツ */}
@@ -253,7 +253,9 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             </div>
 
             {/* コンテンツ */}
-            <p className="text-sm text-gray-600 mb-2">リンクをコピーして共有</p>
+            <p className="text-sm text-gray-600 mb-2">
+              リンクをコピーして共有
+            </p>
             <div className="flex space-x-2">
               <input
                 type="text"
@@ -265,7 +267,9 @@ export default function ArticleCard({ article }: ArticleCardProps) {
               <button
                 onClick={handleCopyUrl}
                 className={`px-4 py-2 rounded-md font-semibold text-white transition-colors ${
-                  urlCopied ? "bg-green-600" : "bg-blue-600 hover:bg-blue-700"
+                  urlCopied
+                    ? "bg-green-600"
+                    : "bg-blue-600 hover:bg-blue-700"
                 }`}
               >
                 {urlCopied ? "コピー済み" : "コピー"}
@@ -277,3 +281,4 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     </>
   );
 }
+
