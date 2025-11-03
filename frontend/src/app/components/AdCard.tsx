@@ -1,6 +1,4 @@
-import {
-  Coffee
-} from "lucide-react";
+import { Coffee } from "lucide-react"; // ★ Coffee アイコンをインポート
 
 /**
  * 広告を表示するためのダミーコンポーネント
@@ -8,20 +6,28 @@ import {
 export default function AdCard() {
   // 広告カードは props を受け取らない (key のみ Timeline.tsx で渡される)
   return (
-    <div className="block w-full p-4 border-b-2 border-black bg-gray-50">
-      <span>[広告募集]</span>
-      <div className="flex items-center justify-center h-24">
-        <Coffee/>
-        {/* ★ 「Buy Me a Coffee」のリンクを追加 */}
+    // ★ relative を追加して、[広告募集]を右上に配置
+    <div className="relative block w-full p-4 border-b-2 border-black bg-gray-50">
+      {/* ★ [広告募集] ラベルを右上に配置 */}
+      <span className="absolute top-2 right-2 text-xs font-bold text-gray-500">
+        [広告募集]
+      </span>
+
+      {/* ★ h-24 を削除し、padding で高さを確保 (py-8) */}
+      <div className="flex items-center justify-center py-8">
+        {/* ★ コーヒーアイコンとリンクを一つの <a> タグでグループ化 */}
         <a
-          href="https://buymeacoffee.com/haruki10093" // あなたのBuy Me a CoffeeのURLに置き換えてください
+          href="https://buymeacoffee.com/haruki10093" // リンクを更新
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-bold text-purple-700 hover:underline"
+          // ★ グループ全体にホバーエフェクトを適用
+          className="flex items-center space-x-2 text-sm font-bold text-purple-700 hover:text-purple-900 transition-colors"
         >
-          Buy Me a Coffee
+          <Coffee size={18} />
+          <span>Buy Me a Coffee</span>
         </a>
       </div>
     </div>
   );
 }
+
