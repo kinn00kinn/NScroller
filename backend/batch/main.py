@@ -38,13 +38,13 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 def get_main_image(url: str) -> str | None:
     """
     記事のURLからOGPまたは本文中のメイン画像を取得する
-    (★ ロジックを強化)
     """
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
-        response = requests.get(url, headers=headers, timeout=5, allow_redirects=True)
+        # Google Newsからのリダイレクトを考慮しタイムアウトを10秒に延長
+        response = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
         response.raise_for_status() 
 
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -52,16 +52,17 @@ def get_main_image(url: str) -> str | None:
         # --- 1. OGP/Twitter (最優先) ---
         og_image = soup.find('meta', property='og:image')
         if og_image and og_image.get('content'):
-            print(f"  [OGP画像発見]: {og_image['content']}")
-            return og_image['content']
+            img_url = urljoin(response.url, og_image['content']) # ★ 相対パスを絶対パスに
+            print(f"  [OGP画像発見]: {img_url}")
+            return img_url
 
         twitter_image = soup.find('meta', attrs={'name': 'twitter:image'})
         if twitter_image and twitter_image.get('content'):
-            print(f"  [Twitter画像発見]: {twitter_image['content']}")
-            return twitter_image['content']
+            img_url = urljoin(response.url, twitter_image['content']) # ★ 相対パスを絶対パスに
+            print(f"  [Twitter画像発見]: {img_url}")
+            return img_url
 
         # --- 2. 本文中の画像 (フォールバック) ---
-        # ★ メインコンテンツのコンテナを推測
         content_selectors = ['article', 'main', '[role="main"]', '.main-content', '.post-content', '.article-body', '#content']
         main_content = None
         for selector in content_selectors:
@@ -71,27 +72,21 @@ def get_main_image(url: str) -> str | None:
                 break
         
         if not main_content:
-            main_content = soup.body # 見つからなければ body 全体
+            main_content = soup.body
 
         if main_content:
-            # コンテナ内の最初の <img> タグを探す (src属性があるもの)
             first_image = main_content.find('img', src=True)
             if first_image:
                 image_src = first_image['src']
                 
-                # srcが // から始まる場合 (プロトコル相対)
-                if image_src.startswith('//'):
-                    image_src = 'https:' + image_src
-                
-                # srcが相対パスの場合、絶対パスに変換
-                # urljoin(base_url, relative_url)
-                absolute_image_url = urljoin(response.url, image_src) 
-                
                 # data:image (埋め込み画像) は除外
-                if absolute_image_url.startswith('data:'):
+                if image_src.startswith('data:'):
                      print("  [本文内画像スキップ] data URI")
                      return None
-
+                
+                # 絶対URLに変換
+                absolute_image_url = urljoin(response.url, image_src) 
+                
                 print(f"  [本文内画像発見]: {absolute_image_url}")
                 return absolute_image_url
 
@@ -120,53 +115,97 @@ def main():
         try:
             feed = feedparser.parse(feed_url)
             source_name = feed.feed.title if hasattr(feed.feed, 'title') else "不明なソース"
+            
+            # ★ Google News かどうかを判定
+            is_google_news = "news.google.com" in feed_url
 
             for entry in feed.entries:
-                if not hasattr(entry, 'link') or not hasattr(entry, 'title'):
-                    print("  スキップ (リンクまたはタイトルがありません)")
-                    continue
-                    
-                article_url = entry.link
-                
-                # 1. 重複チェック
-                existing_article = supabase.table("articles").select("id").eq("article_url", article_url).execute()
+                article_url = None
+                image_url = None # フォールバック用の画像URL
 
+                if is_google_news:
+                    # --- ★ Google News (特別処理) ---
+                    if not hasattr(entry, 'description'):
+                        print("  [Google News] スキップ (description がありません)")
+                        continue
+                    
+                    try:
+                        desc_soup = BeautifulSoup(entry.description, 'html.parser')
+                        
+                        # 1. 記事の元URLを取得 (最初の <a> タグ)
+                        link_tag = desc_soup.find('a', href=True)
+                        if link_tag:
+                            article_url = link_tag['href']
+                        else:
+                            print("  [Google News] スキップ (元の記事URLが見つかりません)")
+                            continue
+                            
+                        # 2. サムネイル画像を取得 (最初の <img> タグ) - フォールバック用
+                        img_tag = desc_soup.find('img', src=True)
+                        if img_tag:
+                            image_url = img_tag['src']
+                            print(f"  [Google News サムネイル発見]: {image_url}")
+
+                    except Exception as e:
+                        print(f"  [Google News] パースエラー: {e}")
+                        continue
+                
+                else:
+                    # --- ★ 標準RSSフィード ---
+                    if not hasattr(entry, 'link') or not hasattr(entry, 'title'):
+                        print("  スキップ (リンクまたはタイトルがありません)")
+                        continue
+                    article_url = entry.link
+
+                # 1. 重複チェック (article_url が確定してから)
+                if not article_url:
+                    continue 
+
+                existing_article = supabase.table("articles").select("id").eq("article_url", article_url).execute()
                 if len(existing_article.data) > 0:
                     continue
 
                 # 2. データ準備
                 published_dt = datetime(*entry.published_parsed[:6]) if hasattr(entry, 'published_parsed') else datetime.now()
                 
-                # ★ 2-1. 画像の取得 (RSS -> OGP -> 本文スキャン の順で探す)
-                image_url = None
+                # 3. 画像の取得 (RSS -> OGP/Web -> Google News Fallback)
                 
-                if hasattr(entry, 'media_content') and entry.media_content:
-                    images = [m['url'] for m in entry.media_content if m.get('medium') == 'image' and m.get('url')]
-                    if images:
-                        image_url = images[0]
-                        print(f"  [RSS内画像発見]: {image_url}")
-                
-                if not image_url and hasattr(entry, 'enclosures'):
-                    images = [e['href'] for e in entry.enclosures if e.get('type', '').startswith('image/') and e.get('href')]
-                    if images:
-                        image_url = images[0]
-                        print(f"  [Enclosure画像発見]: {image_url}")
+                # 3-1. (非Google News) RSSフィード内の画像を探す
+                if not is_google_news:
+                    if hasattr(entry, 'media_content') and entry.media_content:
+                        images = [m['url'] for m in entry.media_content if m.get('medium') == 'image' and m.get('url')]
+                        if images:
+                            image_url = images[0] # この時点では image_url に値が入る
+                            print(f"  [RSS内画像発見]: {image_url}")
+                    
+                    if not image_url and hasattr(entry, 'enclosures'):
+                        images = [e['href'] for e in entry.enclosures if e.get('type', '').startswith('image/') and e.get('href')]
+                        if images:
+                            image_url = images[0]
+                            print(f"  [Enclosure画像発見]: {image_url}")
 
-                # それでも見つからなければ、(★ 強化した関数を呼び出す)
-                if not image_url:
-                    print(f"  メイン画像を取得中: {article_url}")
-                    image_url = get_main_image(article_url)
+                # 3-2. OGP/Webスキャン (RSSで見つからない場合、またはGoogle Newsの場合)
+                # (Google Newsの場合、image_url には低解像度のサムネイルが入っている可能性があるが、高解像度のOGPを優先する)
                 
-                # 2-2. 記事データの構成
+                scraped_image_url = None
+                print(f"  メイン画像を取得中: {article_url}")
+                scraped_image_url = get_main_image(article_url)
+                
+                # OGP/スキャンで取得できた画像を優先
+                if scraped_image_url:
+                    image_url = scraped_image_url
+                # (scraped_image_url が None でも、image_url にGoogle NewsサムネイルやRSS画像が残っている)
+
+                # 4. 記事データの構成
                 article = {
                     "title": entry.title,
                     "article_url": article_url,
                     "published_at": published_dt.isoformat(),
                     "source_name": source_name,
-                    "image_url": image_url,
+                    "image_url": image_url, # 最終的に決定した画像URL
                 }
 
-                # 3. データ保存
+                # 5. データ保存
                 print(f"  新規記事を追加: {article['title']}")
                 supabase.table("articles").insert(article).execute()
 
