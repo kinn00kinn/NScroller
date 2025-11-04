@@ -149,26 +149,56 @@ def fetch_cute_animal_news(api_key: str, cx_id: str) -> List[dict]:
     API_URL = "https://www.googleapis.com/customsearch/v1"
     query = 'panda OR "giant panda" OR パンダ OR ジャイアントパンダ'
     
+    # ### 修正: 10ページ x 10件 = 100件 ###
+    TOTAL_PAGES_TO_TRY = 10
+    ITEMS_PER_PAGE = 10 # APIの制約 (最大10)
+    
+    # ベースとなるパラメータ (start 以外)
     params = {
         "key": api_key,
         "cx": cx_id,
         "q": query,
         "searchType": "image",
         "dateRestrict": "d1",
-        "num": 100,
+        "num": ITEMS_PER_PAGE,
     }
     
-    print(f"--- Google Custom Search API 実行中 (q={query}, dateRestrict=d1) ---")
+    print(f"--- Google Custom Search API 実行中 (最大100件取得, q={query}) ---")
+
+    # ### 修正: 全アイテムを蓄積するリスト ###
+    all_data_items = [] 
     
-    try:
-        response = SESSION.get(API_URL, params=params, timeout=HTTP_TIMEOUT)
-        response.raise_for_status()
-        data = response.json()
-    except requests.RequestException as e:
-        print(f" [APIリクエストエラー]: {e}")
-        if response:
-            print(f" [エラー詳細]: {response.text}")
-        return []
+    for i in range(TOTAL_PAGES_TO_TRY):
+        
+        # ### 修正: 'start' パラメータを動的に設定 ###
+        # i=0 -> start=1
+        # i=1 -> start=11
+        # i=9 -> start=91
+        params['start'] = (i * ITEMS_PER_PAGE) + 1
+        
+        print(f" [API] ページ {i+1}/{TOTAL_PAGES_TO_TRY} (start={params['start']}) を取得中...")
+
+        try:
+            response = SESSION.get(API_URL, params=params, timeout=HTTP_TIMEOUT)
+            response.raise_for_status()
+            data = response.json()
+            
+            # ### 修正: 取得したアイテムを 'all_data_items' に追加 ###
+            items_on_this_page = data.get("items")
+            
+            if not items_on_this_page:
+                # 検索結果が100件未満で、これ以上アイテムがない場合
+                print(" [情報] これ以上取得するアイテムがありません。ループを終了します。")
+                break # ループを抜ける
+            
+            all_data_items.extend(items_on_this_page) # 蓄積
+
+        except requests.RequestException as e:
+            print(f" [APIリクエストエラー]: {e}")
+            if response:
+                print(f" [エラー詳細]: {response.text}")
+            # エラー時はループを中断
+            return [] # 関数から抜け
 
     results = []
     items = data.get("items")
