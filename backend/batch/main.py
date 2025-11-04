@@ -1,310 +1,55 @@
 #!/usr/bin/env python3
 """
-Pandas ニュース収集 (NewsAPI ベース) - リファクタ版
-- NewsApiClient を使って "panda"/"パンダ" に関する記事を取得
-- 不要な Google 解決ロジックは削除済み、画像はまず API の urlToImage を使い、なければ簡易スクレイピングで補完
-- DB へのフロー (Supabase) は維持
+Pandas ニュース収集バッチ実行スクリプト
 
-使い方:
-  .env に NEWSAPI_KEY, SUPABASE_URL, SUPABASE_KEY を設定
-  python collect_pandas_newsapi.py
-
-注意: NewsAPI の利用規約・レート制限に注意してください。
+1. 記事収集モジュール (article_collector) を呼び出し、記事データを取得
+2. DB管理モジュール (database_manager) を呼び出し、取得したデータを保存
 """
 
 import os
 import sys
-import time
-import json
-import requests
-from bs4 import BeautifulSoup
-from supabase import create_client, Client
-from dotenv import load_dotenv
-from datetime import datetime
-from typing import Optional, List
-from email.utils import parsedate_to_datetime
 
-# --- 環境 ---
-load_dotenv()
-NEWSAPI_KEY = os.environ.get("NEWSAPI_KEY")
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-
-supabase: Optional[Client] = None
-if SUPABASE_URL and SUPABASE_KEY:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-else:
-    print("Supabase未設定: ローカル検証モード（DB保存はスキップ）")
-
-# --- 定数 ---
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-HTTP_TIMEOUT = 10
-MIN_IMAGE_BYTES = 512
-SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": USER_AGENT, "Accept-Language": "ja,en-US;q=0.9,en;q=0.8"})
-
-# --- ヘルパー ---
-
-def parse_published(pubval) -> datetime:
-    if not pubval:
-        return datetime.now()
-    if isinstance(pubval, (int, float)):
-        try:
-            return datetime.fromtimestamp(int(pubval))
-        except Exception:
-            return datetime.now()
-    if isinstance(pubval, str):
-        try:
-            return datetime.fromisoformat(pubval.replace("Z", "+00:00"))
-        except Exception:
-            pass
-        try:
-            return parsedate_to_datetime(pubval)
-        except Exception:
-            pass
-    return datetime.now()
-
-
-def fetch_html(url: str, timeout: int = HTTP_TIMEOUT) -> Optional[tuple]:
-    try:
-        resp = SESSION.get(url, timeout=timeout, allow_redirects=True)
-        resp.raise_for_status()
-        return resp.url, BeautifulSoup(resp.text, "html.parser")
-    except requests.RequestException as e:
-        print(f"  [fetch_html エラー] {url} : {e}")
-        return None
-
-
-def validate_image_url(img_url: str, timeout: int = 6) -> bool:
-    try:
-        if not img_url or not img_url.startswith("http"):
-            return False
-        try:
-            head = SESSION.head(img_url, timeout=timeout, allow_redirects=True)
-            if head.status_code >= 400:
-                return False
-            ct = head.headers.get("Content-Type", "")
-            if not ct.startswith("image/"):
-                return False
-            cl = head.headers.get("Content-Length")
-            if cl and int(cl) < MIN_IMAGE_BYTES:
-                return False
-            return True
-        except Exception:
-            g = SESSION.get(img_url, timeout=timeout, stream=True)
-            if g.status_code >= 400:
-                return False
-            ct = g.headers.get("Content-Type", "") or ""
-            if not ct.startswith("image/"):
-                return False
-            first_chunk = next(g.iter_content(1024), b"")
-            g.close()
-            return len(first_chunk) >= 16
-    except Exception as e:
-        print(f"    [validate_image 例外] {img_url} : {e}")
-        return False
-
-
-def get_main_image(article_url: str) -> Optional[str]:
-    fetched = fetch_html(article_url)
-    if not fetched:
-        return None
-    final_url, soup = fetched
-
-    # 1) OGP / Twitter
-    meta_keys = [
-        ("meta", {"property": "og:image"}, "content"),
-        ("meta", {"property": "og:image:secure_url"}, "content"),
-        ("meta", {"name": "twitter:image"}, "content"),
-    ]
-    for tag, attrs, attrname in meta_keys:
-        t = soup.find(tag, attrs=attrs)
-        if t and t.get(attrname):
-            cand = requests.compat.urljoin(final_url, t.get(attrname))
-            if validate_image_url(cand):
-                return cand
-
-    # 2) JSON-LD
-    for script in soup.find_all("script", type="application/ld+json"):
-        try:
-            txt = script.string
-            if not txt:
-                continue
-            data = json.loads(txt)
-            items = data if isinstance(data, list) else [data]
-            for it in items:
-                if isinstance(it, dict):
-                    img = it.get("image") or it.get("thumbnailUrl")
-                    if isinstance(img, str):
-                        cand = requests.compat.urljoin(final_url, img)
-                        if validate_image_url(cand):
-                            return cand
-                    elif isinstance(img, dict):
-                        urlf = img.get("url")
-                        if urlf:
-                            cand = requests.compat.urljoin(final_url, urlf)
-                            if validate_image_url(cand):
-                                return cand
-                    elif isinstance(img, list):
-                        for it2 in img:
-                            if isinstance(it2, str):
-                                cand = requests.compat.urljoin(final_url, it2)
-                                if validate_image_url(cand):
-                                    return cand
-        except Exception:
-            continue
-
-    # 3) 本文中画像
-    selectors = ["article", "main", "[role='main']", ".post-content", ".article-body", "#content"]
-    main_content = None
-    for s in selectors:
-        main_content = soup.select_one(s)
-        if main_content:
-            break
-    if not main_content:
-        main_content = soup.body
-
-    if main_content:
-        for img in main_content.find_all("img", src=True):
-            src = img.get("src")
-            if not src or src.startswith("data:"):
-                continue
-            cand = requests.compat.urljoin(final_url, src)
-            if validate_image_url(cand):
-                return cand
-    return None
-
-
-# --- NewsAPI から収集 ---
-try:
-    from newsapi import NewsApiClient
-except Exception:
-    NewsApiClient = None
-
-
-def process_newsapi(newsapi_key: str, query: str = "", max_pages: int = 3, page_size: int = 100):
-    """
-    かわいい動物ニュース収集版
-    - NewsAPI から「パンダ・猫・犬・レッサーパンダ・カワウソ・ハリネズミ」など
-      かわいい動物に関する記事を収集
-    - 「Python」「ソフトウェア」「分析」など誤検出されやすいIT系ワードを除外
-    """
-
-    if not NewsApiClient:
-        print("newsapi ライブラリが見つかりません。pip install newsapi-python を実行してください。")
-        return
-
-    client = NewsApiClient(api_key=newsapi_key)
-
-    # --- 検索クエリを可愛い動物特化に ---
-    query = (
-        '('
-        'panda OR パンダ OR "giant panda" OR '
-        'cat OR 猫 OR ねこ OR kitten OR 子猫 OR '
-        'dog OR 犬 OR いぬ OR puppy OR 子犬 OR '
-        'red panda OR レッサーパンダ OR otter OR カワウソ OR '
-        'hedgehog OR ハリネズミ OR ferret OR フェレット OR rabbit OR うさぎ OR ウサギ '
-        ') '
-        'AND (cute OR かわいい OR adorable OR 動物 OR animal OR zoo OR 赤ちゃん OR baby OR cub OR 癒し OR "アドベンチャーワールド" OR 上野 OR 和歌山 OR 神戸) '
-        'NOT (software OR python OR data OR express OR antivirus OR library OR analysis OR programming OR code)'
-    )
-
-    languages = ["ja", "en"]
-    total_inserted = 0
-
-    for lang in languages:
-        for page in range(1, max_pages + 1):
-            try:
-                res = client.get_everything(
-                    q=query,
-                    language=lang,
-                    page=page,
-                    page_size=page_size,
-                    sort_by="publishedAt"
-                )
-            except Exception as e:
-                print(f"  [NewsAPI 取得失敗] lang={lang} page={page} : {e}")
-                break
-
-            articles = res.get("articles") or []
-            if not articles:
-                break
-
-            for item in articles:
-                url = (item.get("url") or "").strip()
-                if not url:
-                    continue
-
-                # --- Supabase 既存チェック ---
-                if supabase:
-                    try:
-                        existing = supabase.table("articles").select("id").eq("article_url", url).execute()
-                        if existing.data:
-                            print(f"  [既存記事] {url} -> スキップ")
-                            continue
-                    except Exception as e:
-                        print(f"  [Supabase チェックエラー]: {e}")
-
-                title = item.get("title") or "(無題)"
-                published_dt = parse_published(item.get("publishedAt") or item.get("published"))
-                image_url = item.get("urlToImage") or item.get("image")
-                source_name = (item.get("source") or {}).get("name") or ""
-
-                # --- 画像検証＆補完 ---
-                if image_url:
-                    image_url = image_url.strip()
-                    if not validate_image_url(image_url):
-                        print(f"  [API画像無効] {image_url}")
-                        image_url = None
-
-                if not image_url:
-                    print("  メイン画像を取得中 (スクレイピング fallback)...")
-                    scraped = get_main_image(url)
-                    if scraped:
-                        image_url = scraped
-
-                article = {
-                    "title": title,
-                    "article_url": url,
-                    "published_at": published_dt.isoformat(),
-                    "source_name": source_name or urlparse(url).netloc,
-                    "image_url": image_url,
-                }
-
-                print(f"  新規記事追加予定: {article['title']} （image: {image_url}）")
-
-                if supabase:
-                    try:
-                        supabase.table("articles").insert(article).execute()
-                        total_inserted += 1
-                    except Exception as e:
-                        print(f"    [Supabase挿入エラー]: {e}")
-
-            # レート制限対策
-            time.sleep(0.3)
-
-    print(f"完了: 挿入件数約 {total_inserted}")
-
+# 作成したモジュールをインポート
+from database_manager import init_supabase_client, save_articles_to_db
+# from article_collector import fetch_cute_animal_news, get_main_image
+from search_panda_images import fetch_cute_animal_news, get_main_image
 
 def main():
+    # 1. DBクライアントを初期化 (dotenvもここで読み込まれる)
+    supabase_client = init_supabase_client()
+
+    # 2. NewsAPIキーを環境変数から取得
+    NEWSAPI_KEY = os.environ.get("NEWSAPI_KEY")
     if not NEWSAPI_KEY:
         print("NEWSAPI_KEY が .env に設定されていません。")
         return
 
+    # 3. (元コードの機能) コマンドライン引数がある場合は単発検証モード
     args = sys.argv[1:]
     if args:
         for u in args:
             print(f"=== 単発検証: {u}")
-            img = get_main_image(u)
+            # 単発検証用に get_main_image を collector からインポート
+            img = get_main_image(u) 
             if img:
                 print(f"FOUND image: {img}")
             else:
                 print("NO image found.")
         return
 
+    # 4. メインのバッチ処理
     print("データ収集バッチ開始 (NewsAPI モード)")
-    process_newsapi(NEWSAPI_KEY)
-    print("データ収集バッチ完了")
+    
+    # 4-1. データの収集 (DBのことは知らない)
+    collected_articles = fetch_cute_animal_news(NEWSAPI_KEY)
+    
+    print(f"--- APIから {len(collected_articles)} 件の記事候補を取得しました ---")
+    print("--- データベースへの保存処理を開始します ---")
+
+    # 4-2. データの保存 (APIのことは知らない)
+    total_saved = save_articles_to_db(supabase_client, collected_articles)
+
+    print(f"データ収集バッチ完了 (新規保存: {total_saved} 件)")
 
 
 if __name__ == "__main__":
