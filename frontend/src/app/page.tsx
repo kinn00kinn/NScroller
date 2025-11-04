@@ -36,8 +36,8 @@ export default function Home() {
   };
 
   return (
-    <div className="flex justify-center bg-white text-black">
-      <div className="w-full max-w-xl bg-white">
+    <div className="bg-white text-black">
+      <div className="w-full max-w-xl bg-white mx-auto">
         {/* Header: Sticky GIF banner */}
         <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm">
           <div
@@ -63,11 +63,11 @@ export default function Home() {
         {/* Floating Action Button and Menu */}
         <div
           ref={menuRef}
-          className="fixed bottom-4 right-4 z-20 flex flex-col items-end sm:right-8"
+          className="fixed top-4 right-4 z-20 flex flex-col items-end sm:right-8"
         >
           {/* Menu Panel */}
           {isMenuOpen && (
-            <div className="bg-white border-2 border-black rounded-lg shadow-lg mb-2 w-64 overflow-hidden">
+            <div className="bg-white border-2 border-black rounded-lg shadow-lg mb-2 w-32 overflow-hidden">
               {/* ▼▼▼ ここから修正 ▼▼▼ */}
               <div className="p-3 border-b-2 border-black">
                 {status === "loading" ? (
@@ -134,7 +134,7 @@ export default function Home() {
           {/* FAB */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="bg-black text-white w-16 h-16 rounded-full flex items-center justify-center overflow-hidden shadow-lg hover:bg-gray-800 transition-transform active:scale-95"
+            className="bg-black text-white w-10 h-10 b-4 rounded-full flex items-center justify-center overflow-hidden shadow-lg hover:bg-gray-800 transition-transform active:scale-95"
             aria-label="Toggle menu"
           >
             {isMenuOpen ? (
