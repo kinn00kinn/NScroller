@@ -5,7 +5,7 @@ import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
 
 // --- ★ パンダSNSの基本情報を定義 ---
-const siteTitle = "PanDo (パンドゥ)aa";
+const siteTitle = "PanDo (パンドゥ)";
 const siteDescription = "Latest News SNS";
 // ★ サイトのドメイン（デプロイ先のURL）
 const siteUrl = "https://n-scroller.vercel.app"; // ★ 例: ご自身のURLに変更してください
