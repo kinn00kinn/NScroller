@@ -1,7 +1,12 @@
+'use client'; // ★ クライアントコンポーネントとして動作させる
+
 import Timeline from "@/app/components/Timeline";
 import Image from "next/image";
+import { useSession, signIn, signOut } from "next-auth/react"; // ★ 追加
 
 export default function Home() {
+  const { data: session, status } = useSession(); // ★ 追加
+
   return (
     // ★ 画面全体を中央寄せにするためのラッパー
     // PCでは左右に余白ができ、スマホでは全幅になる
@@ -12,10 +17,6 @@ export default function Home() {
         <header className="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-10 ">
           {/* ★ 修正: 要素がImageのみになったため、flexレイアウト関連のクラスを削除 */}
           <div className="px-4 py-3 border-b-2 border-black">
-            {/* ★ 修正点: 
-       1. srcパスを / (publicフォルダのルート) から始まるように変更
-       2. className="w-full h-auto" を追加し、親要素の幅(px-4の内側)に合わせる
-      */}
             <Image
               src="/Pando_banner_1000.gif" // ★ 修正: publicフォルダからのパス
               alt="NScroller Logo"
@@ -25,6 +26,45 @@ export default function Home() {
               unoptimized // ★ GIF画像の場合は最適化をオフ
             />
           </div>
+          {/* ★★★ 認証状態の表示を追加 ★★★ */}
+          <div className="px-4 py-2 border-b-2 border-black flex justify-between items-center">
+            {status === "loading" ? (
+              <p>Loading...</p>
+            ) : session ? (
+              <div className="flex items-center gap-4 w-full">
+                {session.user?.image && (
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name || "User"}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
+                )}
+                <div className="flex-grow">
+                  <p className="text-sm font-bold">{session.user?.name}</p>
+                  <p className="text-xs text-gray-600">{session.user?.email}</p>
+                </div>
+                <button
+                  onClick={() => signOut()}
+                  className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700 whitespace-nowrap"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4 w-full">
+                <p className="flex-grow">Not signed in.</p>
+                <button
+                  onClick={() => signIn("google")}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 whitespace-nowrap"
+                >
+                  Sign in with Google
+                </button>
+              </div>
+            )}
+          </div>
+          {/* ★★★ ここまで ★★★ */}
         </header>
 
         {/* タイムライン本体 (左右の境界線を追加) */}

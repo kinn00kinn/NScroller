@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+import AuthProvider from "./components/AuthProvider";
 
 // --- ★ パンダSNSの基本情報を定義 ---
 const siteTitle = "PanDo (パンドゥ)";
@@ -64,7 +65,7 @@ export default function RootLayout({
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-white text-black`}
       >
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
