@@ -211,7 +211,7 @@ def fetch_cute_animal_news(api_key: str, cx_id: str) -> List[dict]:
                 "article_url": source_article_url,
                 "image_url": final_image_url,
                 "source_name": source_name,
-                "fetched_at": datetime.now().isoformat()
+                "published_at": datetime.now().isoformat()
             })
 
     return results
