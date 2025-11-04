@@ -195,19 +195,26 @@ def fetch_cute_animal_news(api_key: str, cx_id: str) -> List[dict]:
 
         except requests.RequestException as e:
             print(f" [APIリクエストエラー]: {e}")
-            if response:
+            if response is not None and hasattr(response, 'text'):
                 print(f" [エラー詳細]: {response.text}")
             # エラー時はループを中断
             return [] # 関数から抜け
 
+    # --- ループ終了後 ---
+    
     results = []
-    items = data.get("items")
+    
+    # ### 修正: ループで蓄積した 'all_data_items' を使う ###
+    # items = data.get("items") # <-- バグの原因: 最後のページの結果しか使われない
+    items = all_data_items      # <-- 修正: 全ページの結果(最大100件)を使う
     
     if not items:
         print(" [情報] 該当する画像は見つかりませんでした。")
         return []
 
-    for item in items:
+    print(f"\n--- APIから取得した合計 {len(items)} 件の記事候補を検証します ---")
+
+    for item in items: # <-- これで all_data_items をループ処理できる
         title = item.get("title", "(タイトルなし)")
         google_image_url = item.get("link")
         source_article_url = item.get("image", {}).get("contextLink")
