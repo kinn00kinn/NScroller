@@ -31,7 +31,7 @@ export default function Home() {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   };
 
@@ -61,28 +61,43 @@ export default function Home() {
         </main>
 
         {/* Floating Action Button and Menu */}
-        <div ref={menuRef} className="fixed bottom-4 right-4 z-20 flex flex-col items-end sm:right-8">
+        <div
+          ref={menuRef}
+          className="fixed bottom-4 right-4 z-20 flex flex-col items-end sm:right-8"
+        >
           {/* Menu Panel */}
           {isMenuOpen && (
             <div className="bg-white border-2 border-black rounded-lg shadow-lg mb-2 w-64 overflow-hidden">
+              {/* ▼▼▼ ここから修正 ▼▼▼ */}
               <div className="p-3 border-b-2 border-black">
                 {status === "loading" ? (
                   <p className="text-sm animate-pulse">Loading...</p>
-                ) : session ? (
+                ) : session && session.user ? ( // 変更点1: session.user もチェック
                   <div className="flex items-center gap-3">
-                    <Image
-                      src={session.user.image!}
-                      alt={session.user.name!}
-                      width={32}
-                      height={32}
-                      className="rounded-full"
-                    />
-                    <span className="text-sm font-bold truncate">{session.user.name}</span>
+                    {session.user.image ? ( // 変更点2: imageがnullでないかチェック
+                      <Image
+                        src={session.user.image} // '!' を削除
+                        alt={session.user.name || "User Avatar"} // nameがnullの場合のフォールバック
+                        width={32}
+                        height={32}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      // 画像がない場合のプレースホルダー（FABと同じ）
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                        <User size={18} />
+                      </div>
+                    )}
+                    <span className="text-sm font-bold truncate">
+                      {session.user.name || "User"}{" "}
+                      {/* 変更点3: nameがnullの場合のフォールバック */}
+                    </span>
                   </div>
                 ) : (
                   <p className="text-sm font-bold">Not signed in</p>
                 )}
               </div>
+              {/* ▲▲▲ ここまで修正 ▲▲▲ */}
               <div className="flex flex-col text-sm">
                 {session ? (
                   <button
