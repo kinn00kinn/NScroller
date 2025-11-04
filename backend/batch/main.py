@@ -26,8 +26,6 @@ def main():
     
     # 変更点 2: 2つのキーをチェック
     if not (GOOGLE_API_KEY and  CUSTOM_SEARCH_CX):
-        print(GOOGLE_API_KEY)
-        print(CUSTOM_SEARCH_CX)
         print("GOOGLE_API_KEY または CUSTOM_SEARCH_CX が .env に設定されていません。")
         return
 
