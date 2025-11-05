@@ -176,7 +176,7 @@ def fetch_cute_animal_news(api_key: str, cx_id: str) -> List[dict]:
         # i=9 -> start=91
         params['start'] = (i * ITEMS_PER_PAGE) + 1
         
-        print(f" [API] ページ {i+1}/{TOTAL_PAGES_TO_TRY} (start={params['start']}) を取得中...")
+        # print(f" [API] ページ {i+1}/{TOTAL_PAGES_TO_TRY} (start={params['start']}) を取得中...")
 
         try:
             response = SESSION.get(API_URL, params=params, timeout=HTTP_TIMEOUT)
