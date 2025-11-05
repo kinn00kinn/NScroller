@@ -41,3 +41,4 @@ yarn-error.log*
 next-env.d.ts
 .env.local 
 /.gitignore/.env.local 
+/batch/__pycache__

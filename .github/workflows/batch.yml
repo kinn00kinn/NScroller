@@ -37,4 +37,5 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           CUSTOM_SEARCH_CX: ${{ secrets.CUSTOM_SEARCH_CX }}
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }} 
         run: python batch/main.py
