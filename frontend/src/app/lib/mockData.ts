@@ -5,16 +5,19 @@ export type Article = {
   source_name: string;
   published_at: string;
   image_url: string | null;
+  like_num: number;
 };
 
 export const mockData: Article[] = [
   {
     id: "1",
-    title: "Introducing Llama 3: The Next Generation of Open Large Language Models",
+    title:
+      "Introducing Llama 3: The Next Generation of Open Large Language Models",
     article_url: "https://ai.meta.com/blog/",
     source_name: "Meta AI Blog",
     published_at: "2025-10-30T10:00:00Z",
     image_url: "https://via.placeholder.com/150", // 画像URL
+    like_num: 0,
   },
   {
     id: "2",
@@ -23,6 +26,7 @@ export const mockData: Article[] = [
     source_name: "Google DeepMind Blog",
     published_at: "2025-10-29T14:30:00Z",
     image_url: "https://via.placeholder.com/150", // 画像URL
+    like_num: 0,
   },
   {
     id: "3",
@@ -31,6 +35,7 @@ export const mockData: Article[] = [
     source_name: "Zenn",
     published_at: "2025-10-29T09:00:00Z",
     image_url: null, // ★ 画像がないパターン
+    like_num: 0,
   },
   // ... (他のデータにも summary を追加してください)
   {
@@ -40,6 +45,7 @@ export const mockData: Article[] = [
     source_name: "arXiv (cs.CL)",
     published_at: "2025-10-28T18:00:00Z",
     image_url: "https://via.placeholder.com/150", // 画像URL
+    like_num: 0,
   },
 ];
 
@@ -54,5 +60,6 @@ for (let i = 5; i <= 20; i++) {
       Date.now() - (i - 4) * 24 * 60 * 60 * 1000
     ).toISOString(),
     image_url: i % 3 !== 0 ? "https://via.placeholder.com/150" : null,
+    like_num: 0,
   });
 }
