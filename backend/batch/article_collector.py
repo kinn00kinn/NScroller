@@ -17,7 +17,7 @@ try:
 except Exception:
     NewsApiClient = None
 
-def fetch_from_newsapi(newsapi_key: str, max_pages: int = 2, page_size: int = 100) -> List[dict]:
+def fetch_from_newsapi(newsapi_key: str, max_pages: int = 1, page_size: int = 100) -> List[dict]:
     """
     NewsAPIからパンダ関連ニュースを収集し、処理済みの記事辞書のリストを返す。
     (関数名を変更)
@@ -43,7 +43,7 @@ def fetch_from_newsapi(newsapi_key: str, max_pages: int = 2, page_size: int = 10
         'NOT (software OR python OR data OR express OR "Panda Security")'
     )
 
-    languages = ["ja", "en"]
+    languages = ["en"]
     collected_articles = [] # 収集した記事を格納するリスト
     
     print(f"--- NewsAPI 実行中 (q={query}) ---")

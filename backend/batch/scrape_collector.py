@@ -9,6 +9,7 @@ from typing import List
 from urllib.parse import urljoin
 # 共通ヘルパーをインポート
 from utils import fetch_html, get_main_image, parse_published
+import datetime
 
 # --- ★ 収集対象のサイト情報 ---
 # (これは架空のサイト'panda-news.jp'を想定した例です)
