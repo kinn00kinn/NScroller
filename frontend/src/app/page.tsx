@@ -1,3 +1,4 @@
+// frontend/src/app/page.tsx
 "use client";
 
 import Timeline from "@/app/components/Timeline";
@@ -5,14 +6,18 @@ import Image from "next/image";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { User, X } from "lucide-react";
+import { User, X, Heart } from "lucide-react"; // ★ Heart アイコンを追加
+import FeedSorter from "@/app/components/FeedSorter"; // ★ FeedSorter をインポート
 
 export default function Home() {
   const { data: session, status } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Effect to handle clicks outside of the menu to close it
+  // ★ ソート状態を追加
+  const [sortMode, setSortMode] = useState<"recent" | "likes">("recent");
+
+  // Effect to handle clicks outside of the menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -27,7 +32,7 @@ export default function Home() {
     };
   }, [isMenuOpen]);
 
-  // Function to scroll to the top of the page
+  // Function to scroll to the top
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -42,22 +47,26 @@ export default function Home() {
         <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm">
           <div
             onClick={scrollToTop}
-            className="border-b-2 border-black flex justify-center cursor-pointer"
+            className="border-b-2 border-black flex justify-center cursor-pointer h-[73px] items-center" // ★ 高さを固定 (例: 73px)
           >
             <Image
               src="/Pando_banner_1000.gif"
-              alt="NScroller Banner"
+              alt="PanDo Banner"
               width={1000}
               height={100}
               className="w-10/12 h-auto"
               unoptimized
             />
           </div>
+
+          {/* ★ FeedSorter をヘッダーの直下に追加 */}
+          <FeedSorter sortMode={sortMode} setSortMode={setSortMode} />
         </header>
 
         {/* Main timeline content */}
         <main className="border-x-2 border-b-2 border-black">
-          <Timeline />
+          {/* ★ sortMode を Timeline に渡す */}
+          <Timeline sortMode={sortMode} />
         </main>
 
         {/* Floating Action Button and Menu */}
@@ -67,45 +76,65 @@ export default function Home() {
         >
           {/* Menu Panel */}
           {isMenuOpen && (
-            <div className="bg-white border-2 border-black rounded-lg shadow-lg mb-2 w-32 overflow-hidden">
-              {/* ▼▼▼ ここから修正 ▼▼▼ */}
+            <div className="bg-white border-2 border-black rounded-lg shadow-lg mb-2 w-48 overflow-hidden">
+              {" "}
+              {/* ★ 幅を少し広げる */}
+              {/* (ユーザー情報表示 ... 変更なし) */}
               <div className="p-3 border-b-2 border-black">
                 {status === "loading" ? (
                   <p className="text-sm animate-pulse">Loading...</p>
-                ) : session && session.user ? ( // 変更点1: session.user もチェック
+                ) : session && session.user ? (
                   <div className="flex items-center gap-3">
-                    {session.user.image ? ( // 変更点2: imageがnullでないかチェック
+                    {session.user.image ? (
                       <Image
-                        src={session.user.image} // '!' を削除
-                        alt={session.user.name || "User Avatar"} // nameがnullの場合のフォールバック
+                        src={session.user.image}
+                        alt={session.user.name || "User Avatar"}
                         width={32}
                         height={32}
                         className="rounded-full"
                       />
                     ) : (
-                      // 画像がない場合のプレースホルダー（FABと同じ）
                       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
                         <User size={18} />
                       </div>
                     )}
                     <span className="text-sm font-bold truncate">
-                      {session.user.name || "User"}{" "}
-                      {/* 変更点3: nameがnullの場合のフォールバック */}
+                      {session.user.name || "User"}
                     </span>
                   </div>
                 ) : (
                   <p className="text-sm font-bold">Not signed in</p>
                 )}
               </div>
-              {/* ▲▲▲ ここまで修正 ▲▲▲ */}
               <div className="flex flex-col text-sm">
+                {/* ★ 「いいねした投稿」へのリンクを追加 (ログイン時のみ) */}
+                {session && (
+                  <Link
+                    href="/my-likes"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
+                  >
+                    <Heart size={16} />
+                    <span>いいねした投稿</span>
+                  </Link>
+                )}
+
+                <Link
+                  href="/links"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
+                >
+                  インフォメーション
+                </Link>
+
+                {/* (サインイン/サインアウト ... 変更なし) */}
                 {session ? (
                   <button
                     onClick={() => {
                       signOut();
                       setIsMenuOpen(false);
                     }}
-                    className="text-left w-full px-3 py-2 hover:bg-gray-100 transition-colors"
+                    className="text-left w-full px-3 py-2 hover:bg-gray-100 transition-colors border-t-2 border-black"
                   >
                     Sign Out
                   </button>
@@ -120,18 +149,11 @@ export default function Home() {
                     Sign in with Google
                   </button>
                 )}
-                <Link
-                  href="/links"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
-                >
-                  インフォメーション
-                </Link>
               </div>
             </div>
           )}
 
-          {/* FAB */}
+          {/* FAB (変更なし) */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="bg-black text-white w-10 h-10 b-4 rounded-full flex items-center justify-center overflow-hidden shadow-lg hover:bg-gray-800 transition-transform active:scale-95"

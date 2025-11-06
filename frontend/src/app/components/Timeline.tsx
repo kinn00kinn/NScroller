@@ -1,20 +1,31 @@
+// frontend/src/app/components/Timeline.tsx
 "use client";
 
 import { useInfiniteFeed, type FeedItem } from "@/app/lib/hook";
-// import { useInfiniteFeed, type FeedItem } from "@/app/lib/mockhook";
 import ArticleCard from "./ArticleCard";
 import AdCard from "./AdCard";
 import { Loader2, AlertTriangle } from "lucide-react";
 
-// Helper to check item type
+// Helper (変更なし)
 function isAd(item: FeedItem): item is { type: "ad"; id: string } {
   return "type" in item && item.type === "ad";
 }
 
-export default function Timeline() {
-  const { items, isLoading, hasMore, error, ref } = useInfiniteFeed();
+// ★ sortMode を props で受け取る
+export default function Timeline({
+  sortMode,
+  myLikesOnly = false,
+}: {
+  sortMode: string;
+  myLikesOnly?: boolean;
+}) {
+  // ★ useInfiniteFeed に sortMode を渡す
+  // ★ mutate も受け取る
 
-  // エラーが発生した場合の表示
+  const { items, isLoading, hasMore, error, ref, mutate } =
+    useInfiniteFeed(sortMode, myLikesOnly);
+
+  // エラー表示 (変更なし)
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center border-b-2 border-black">
@@ -33,9 +44,13 @@ export default function Timeline() {
         if (isAd(item)) {
           return <AdCard key={item.id} />;
         }
-        return <ArticleCard key={item.id} article={item} />;
+        // ★ ArticleCard に mutate 関数を渡す (いいねの即時反映のため)
+        return (
+          <ArticleCard key={item.id} article={item} onLikeSuccess={() => mutate()} />
+        );
       })}
 
+      {/* ... ローディング表示 ... (変更なし) */}
       {hasMore ? (
         <div
           ref={ref}
