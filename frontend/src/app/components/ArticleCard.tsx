@@ -14,6 +14,7 @@ import {
   MessageSquare,
   Send,
   Heart,
+  Bookmark,
   MessageCircle, // ★ 返信アイコン
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -49,14 +50,15 @@ export default function ArticleCard({
   // ★ いいねのローカル状態 (APIからの 'article.is_liked' と 'article.like_num' を初期値とする)
   const [isLiked, setIsLiked] = useState(article.is_liked);
   const [likeCount, setLikeCount] = useState(article.like_num || 0);
-
+  const [isBookmarked, setIsBookmarked] = useState(article.is_bookmarked);
   const { data: session, status } = useSession();
 
   // ★ APIからのpropsが変更されたら、ローカルのいいね状態も同期する
   useEffect(() => {
     setIsLiked(article.is_liked);
     setLikeCount(article.like_num || 0);
-  }, [article.is_liked, article.like_num]);
+    setIsBookmarked(article.is_bookmarked); // ★★★ 追加 ★★★
+  }, [article.is_liked, article.like_num, article.is_bookmarked]);
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && "share" in navigator) {
@@ -159,6 +161,47 @@ export default function ArticleCard({
     // e.preventDefault();
   };
 
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (status === "loading") return;
+
+    if (!session) {
+      alert("ブックマーク機能を利用するにはログインが必要です。");
+      signIn("google");
+      return;
+    }
+
+    // 楽観的UI
+    const newIsBookmarked = !isBookmarked;
+    setIsBookmarked(newIsBookmarked);
+    const action = newIsBookmarked ? "bookmark" : "unbookmark";
+
+    try {
+      const response = await fetch("/api/bookmark", {
+        // ★ APIパス
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          article_id: article.id,
+          action: action,
+        }),
+      });
+
+      if (!response.ok) throw new Error("API request failed");
+
+      // ★ SWRキャッシュを再検証 (タイムライン全体)
+      // (onLikeSuccess は 'onActionSuccess' にリネームした方が良いが、
+      //  ここではいいねの関数をそのまま流用)
+      onLikeSuccess();
+    } catch (error) {
+      console.error("ブックマークの更新に失敗しました:", error);
+      // エラー時はUIを元に戻す
+      setIsBookmarked(!newIsBookmarked);
+    }
+  };
+
   return (
     <>
       {/* --- 1. 記事カード本体 --- */}
@@ -258,7 +301,7 @@ export default function ArticleCard({
                 </button>
 
                 {/* 2. 共有 (MD) */}
-                <button
+                {/* <button
                   onClick={handleShareMDClick}
                   disabled={copiedMD}
                   className={`flex items-center space-x-1 transition-colors duration-150 ${
@@ -271,9 +314,9 @@ export default function ArticleCard({
                   <span className="text-sm hidden sm:inline">
                     {" "}
                     {/* ★ SPでは非表示 */}
-                    {copiedMD ? "コピー!" : "共有 (MD)"}
-                  </span>
-                </button>
+                    {/* {copiedMD ? "コピー!" : "共有 (MD)"} */}
+                  {/* </span> */}
+                {/* </button> */} 
 
                 {/* 3. 共有 (モーダル) */}
                 <button
@@ -296,6 +339,21 @@ export default function ArticleCard({
                 >
                   <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
                   <span className="text-sm">{likeCount}</span>
+                </button>
+                {/* ★★★ 5. ブックマークボタン (新規追加) ★★★ */}
+                <button
+                  onClick={handleBookmarkClick}
+                  className={`flex items-center space-x-1 transition-colors duration-150 ${
+                    isBookmarked
+                      ? "text-blue-500 hover:text-blue-700"
+                      : "text-black hover:text-gray-600"
+                  }`}
+                  aria-label="ブックマーク"
+                >
+                  <Bookmark
+                    size={18}
+                    fill={isBookmarked ? "currentColor" : "none"}
+                  />
                 </button>
               </div>
 

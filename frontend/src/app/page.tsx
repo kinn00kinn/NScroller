@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { User, X, Heart, UserCog } from "lucide-react"; // ★ Heart アイコンを追加
+import { User, X, Heart, UserCog, Bookmark } from "lucide-react"; // ★ Heart アイコンを追加
 import FeedSorter from "@/app/components/FeedSorter"; // ★ FeedSorter をインポート
 
 export default function Home() {
@@ -17,7 +17,6 @@ export default function Home() {
   // ...
   // ★ ソート状態の型を変更
   const [sortMode, setSortMode] = useState<"recent" | "recommended">("recent"); // ★ 'likes' を 'recommended' に変更
-
 
   // Effect to handle clicks outside of the menu
   useEffect(() => {
@@ -120,6 +119,17 @@ export default function Home() {
                     <span>いいねした投稿</span>
                   </Link>
                 )}
+                {session && (
+                  <Link
+                    href="/my-bookmarks"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
+                  >
+                    <Bookmark size={16} />
+                    <span>ブックマーク</span>
+                  </Link>
+                )}
+
                 {session && (
                   <Link
                     href="/profile"

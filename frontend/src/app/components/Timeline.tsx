@@ -15,15 +15,20 @@ function isAd(item: FeedItem): item is { type: "ad"; id: string } {
 export default function Timeline({
   sortMode,
   myLikesOnly = false,
+  myBookmarksOnly = false, // 1. myBookmarksOnly を Props に追加
 }: {
   sortMode: string;
   myLikesOnly?: boolean;
+  myBookmarksOnly?: boolean;
 }) {
   // ★ useInfiniteFeed に sortMode を渡す
   // ★ mutate も受け取る
 
-  const { items, isLoading, hasMore, error, ref, mutate } =
-    useInfiniteFeed(sortMode, myLikesOnly);
+  const { items, isLoading, hasMore, error, ref, mutate } = useInfiniteFeed(
+    sortMode,
+    myLikesOnly,
+    myBookmarksOnly
+  );
 
   // エラー表示 (変更なし)
   if (error) {
@@ -46,7 +51,11 @@ export default function Timeline({
         }
         // ★ ArticleCard に mutate 関数を渡す (いいねの即時反映のため)
         return (
-          <ArticleCard key={item.id} article={item} onLikeSuccess={() => mutate()} />
+          <ArticleCard
+            key={item.id}
+            article={item}
+            onLikeSuccess={() => mutate()}
+          />
         );
       })}
 

@@ -51,7 +51,9 @@ export async function GET(req: NextRequest) {
     const sort = searchParams.get("sort") || "recent";
     // 'my-likes' ページ用のフィルタ
     const liked_by_user = searchParams.get("liked_by_user") === "true";
-
+    // ★★★ 'my-bookmarks' ページ用のフィルタ (追加) ★★★
+    const bookmarked_by_user =
+      searchParams.get("bookmarked_by_user") === "true";
     const MAX_LIMIT = 100;
     const safeLimit = Math.max(1, Math.min(limit, MAX_LIMIT));
 
@@ -84,7 +86,18 @@ export async function GET(req: NextRequest) {
 
       // 4. 'total: null' (総件数なし) でレスポンスを返す
       return NextResponse.json({ articles, total: null, hasMore });
+    } else if (bookmarked_by_user && requesting_user_id) {
+      // 1. 新しいRPC 'get_my_bookmarked_articles' を呼び出す
+      const { data, error } = await supabase.rpc("get_my_bookmarked_articles", {
+        p_user_id: requesting_user_id,
+        p_page_num: page,
+        p_page_limit: safeLimit,
+      });
 
+      if (error) throw error;
+      const articles = data || [];
+      const hasMore = articles.length === safeLimit;
+      return NextResponse.json({ articles, total: null, hasMore });
       // ★★★ 修正ここまで ★★★
     } else {
       // ★ 通常のタイムライン (RPC呼び出し)

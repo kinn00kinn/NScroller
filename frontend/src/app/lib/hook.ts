@@ -30,7 +30,8 @@ const PAGE_SIZE = 20;
 // ★ sortMode と myLikesOnly を引数に追加
 export function useInfiniteFeed(
   sortMode: string = "recent",
-  myLikesOnly: boolean = false
+  myLikesOnly: boolean = false,
+  myBookmarksOnly: boolean = false // ★★★ パラメータ追加 ★★★
 ) {
   const { ref, inView } = useInView({ threshold: 0.5 });
 
@@ -48,6 +49,9 @@ export function useInfiniteFeed(
       }&limit=${PAGE_SIZE}&sort=${apiSortMode}`;
       if (myLikesOnly) {
         url += "&liked_by_user=true";
+      }
+      if (myBookmarksOnly) {
+        url += "&bookmarked_by_user=true";
       }
       return url;
     }, fetcher);
