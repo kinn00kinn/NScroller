@@ -1,33 +1,36 @@
 import React from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react"; // ★ ArrowLeft をインポート
 
 const LinksPage = () => {
+  // ★ リンクのテキストと順序を修正
   const siteLinks = [
-    { href: "links/about", text: "NScrollerについて" },
+    { href: "links/about", text: "PanDo (パンドゥ) について" },
+    { href: "links/help", text: "よくある質問 (FAQ)" },
+    { href: "links/credits", text: "素材・ライセンス" }, // ★ 新規追加
     { href: "links/terms", text: "利用規約" },
     { href: "links/policy", text: "プライバシーポリシー" },
-    { href: "links/help", text: "ヘルプセンター" },
-    { href: "links/ads", text: "広告掲載のご案内" },
+    { href: "links/ads", text: "広告掲載について" },
     { href: "links/contact", text: "お問い合わせ" },
   ];
 
   return (
     <div className="flex justify-center bg-white text-black">
       <div className="w-full max-w-xl">
-        <header className="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-10">
-          <a
-            href="/"
-            className="inline-block text-blue-600 border-y-2 border-x-2 border-black 
-             p-2 mb-8 hover:bg-gray-100 transition-colors"
+        {/* ★ ヘッダーを修正 (my-likes ページなどと統一) */}
+        <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm p-2 border-b-2 border-black flex items-center space-x-4">
+          <Link
+            href="/" // ホームに戻る
+            className="p-2 hover:bg-gray-100 rounded-full"
+            aria-label="戻る"
           >
-            ◀PanDoに戻る
-          </a>
-          <div className="px-4 py-3 border-b-2 border-black">
-            <h1 className="text-xl font-bold text-center">
-              インフォメーション
-            </h1>
+            <ArrowLeft size={20} />
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold">インフォメーション</h1>
           </div>
         </header>
+
         <main className="border-x-2 border-b-2 border-black">
           <div>
             {siteLinks.map((link, index) => (

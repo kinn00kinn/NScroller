@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/lib/auth";
 import { Article } from "@/app/lib/mockData";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link"; // ★ Link をインポート
 import { notFound } from "next/navigation"; // ★ notFound をインポート
 
