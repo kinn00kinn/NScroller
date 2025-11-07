@@ -4,6 +4,7 @@ import hooksPlugin from "eslint-plugin-react-hooks";
 import jsxA11yPlugin from "eslint-plugin-jsx-a11y";
 import tsParser from "@typescript-eslint/parser";
 import eslintJs from "@eslint/js";
+import globals from "globals"; // ★ 1. `globals` をインポート
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
@@ -36,6 +37,7 @@ export default [
         project: ["./tsconfig.json"], // tsconfig.json の場所
       },
       globals: {
+        ...globals.browser, // ★ 2. ブラウザのグローバル変数をここに追加
         React: "readonly",
         process: "readonly",
         require: "readonly",

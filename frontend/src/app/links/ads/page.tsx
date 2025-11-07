@@ -1,3 +1,6 @@
+/*
+kinn00kinn/pando/PanDo-f8b140cd538de0b9dffd171838892a1e2efe0883/frontend/src/app/links/ads/page.tsx の更新案
+*/
 import React from "react";
 
 const AdsPage = () => {
@@ -19,28 +22,28 @@ const AdsPage = () => {
           </a>
           <div className="space-y-8">
             <p>
-              AI分野の最前線で活躍するプロフェッショナルに、あなたのプロダクトやサービスを届けませんか？
+              パンダを愛する多くのユーザーに、あなたのプロダクトやサービスを届けませんか？
             </p>
 
             <section>
               <h2 className="text-xl font-bold mb-2">
-                NScrollerの強み: ターゲットオーディエンス
+                PanDoの強み: ターゲットオーディエンス
               </h2>
               <p>
-                NScrollerのユーザーは、AI技術の最新動向に強い関心を持つ、非常に専門性の高いオーディエンスです。日々の情報収集に意欲的な、以下のような方々に直接アプローチできます。
+                PanDoのユーザーは、パンダの最新動向に強い関心を持つ、熱心なオーディエンスです。日々の情報収集に意欲的な、以下のような方々に直接アプローチできます。
               </p>
               <ul className="list-disc list-inside mt-2 pl-4 space-y-1">
-                <li>AIエンジニア・機械学習エンジニア</li>
-                <li>データサイエンティスト</li>
-                <li>企業の研究開発担当者</li>
-                <li>AI分野を専攻する学生・大学院生</li>
+                <li>パンダ愛好家</li>
+                <li>動物園ファン</li>
+                <li>動物関連の情報を探しているご家族</li>
+                <li>環境保護に関心のある方</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-xl font-bold mb-2">なぜNScrollerなのか？</h2>
+              <h2 className="text-xl font-bold mb-2">なぜPanDoなのか？</h2>
               <p>
-                一般的なSNSや広告プラットフォームとは異なり、NScrollerは「AI」という単一のテーマに特化しています。ユーザーは明確な目的を持ってサービスを利用しているため、広告への関心度も高く、質の高いエンゲージメントが期待できます。
+                一般的なSNSや広告プラットフォームとは異なり、PanDoは「パンダ」という単一のテーマに特化しています。ユーザーは明確な目的を持ってサービスを利用しているため、広告への関心度も高く、質の高いエンゲージメントが期待できます。
               </p>
             </section>
 
@@ -50,7 +53,7 @@ const AdsPage = () => {
                 広告掲載に関するご相談、料金プラン、その他ご質問については、下記メールアドレスまでお気軽にお問い合わせください。
               </p>
               <a
-                href="mailto:ads@example.com?subject=NScroller広告掲載について"
+                href="mailto:ads@example.com?subject=PanDo広告掲載について"
                 className="text-blue-600 hover:underline"
               >
                 ads@example.com

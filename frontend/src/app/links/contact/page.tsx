@@ -1,3 +1,6 @@
+/*
+kinn00kinn/pando/PanDo-f8b140cd538de0b9dffd171838892a1e2efe0883/frontend/src/app/links/contact/page.tsx の更新案
+*/
 import React from "react";
 
 const ContactPage = () => {
@@ -19,12 +22,13 @@ const ContactPage = () => {
           </a>
           <div className="text-center space-y-6">
             <p>
-              NScrollerに関するご意見・ご感想、バグのご報告、その他のお問い合わせは、下記のメールアドレスまでお気軽にご連絡ください。
+              PanDo (パンドゥ)
+              に関するご意見・ご感想、バグのご報告、その他のお問い合わせは、下記のメールアドレスまでお気軽にご連絡ください。
             </p>
 
             <div className="border-2 border-black p-4">
               <a
-                href="mailto:contact@example.com?subject=NScrollerへのお問い合わせ"
+                href="mailto:contact@example.com?subject=PanDoへのお問い合わせ"
                 className="text-blue-600 hover:underline font-semibold"
               >
                 contact@example.com

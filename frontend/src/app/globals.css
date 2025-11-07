@@ -5,3 +5,37 @@
 body {
   /* 以前の color / background-color 指定を削除する */
 }
+
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6); /* ★ 0.5 から 0.7 に変更 */
+  z-index: 9998; /* ポップオーバーより一つ小さい */
+}
+
+.tutorial-highlight {
+  position: relative;
+  /* box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5); */
+  /* backdrop-filter: brightness(1.5) saturate(1.2); */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.80); /* 0.7 -> 0.75 にして少し暗く */
+  border-radius: 8px; /* 角を丸く */
+  z-index: 9999; /* ★ 最前面に表示 */
+}
+
+.tutorial-popover {
+  position: absolute;
+  z-index: 10000; /* ★ オーバーレイ(9999) よりも手前に表示 */
+  background-color: white;
+  color: black;
+  border: 2px solid black;
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 280px;
+  min-width: 240px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* 影を少し濃く */
+  transition: opacity 0.3s ease-in-out, top 0.3s ease-in-out, left 0.3s ease-in-out;
+  transform: translateZ(0);
+}

@@ -1,12 +1,15 @@
+/*
+kinn00kinn/pando/PanDo-f8b140cd538de0b9dffd171838892a1e2efe0883/frontend/src/app/links/help/page.tsx の更新案
+*/
 import React from "react";
-import Link from "next/link";
+
 
 const HelpPage = () => {
   const faqs = [
     {
-      question: "NScrollerとは何ですか？",
+      question: "PanDo (パンドゥ) とは何ですか？",
       answer:
-        'NScrollerは、AI分野の最新ニュースや技術記事、論文などを自動で集約し、タイムライン形式で手軽に閲覧できるAI特化型ニュースアグリゲーターです。詳しくは<a href="/about" class="text-blue-600 hover:underline">Aboutページ</a>をご覧ください。',
+        'PanDoは、パンダに関する最新ニュースやブログ記事、動画などを自動で集約し、タイムライン形式で手軽に閲覧できるパンダ特化型のアグリゲーションサービスです。詳しくは<a href="/links/about" class="text-blue-600 hover:underline">Aboutページ</a>をご覧ください。',
     },
     {
       question: "利用は無料ですか？",
@@ -15,17 +18,17 @@ const HelpPage = () => {
     {
       question: "どこから情報を集めているのですか？",
       answer:
-        "OpenAI、Google DeepMind、Hugging Faceなどの主要なテックブログや、Zenn、Qiita、arXivといった国内外の信頼性の高い情報源からコンテンツを収集しています。",
+        "国内外の主要な動物園、ニュースメディア、パンダ関連のブログなど、信頼性の高い情報源からコンテンツを収集しています。",
     },
     {
       question: "フィードに表示する情報源をカスタマイズできますか？",
       answer:
-        "現在のバージョン（MVP）では、情報源のカスタマイズ機能は提供しておりません。今後のアップデートで実装を検討しています。",
+        "現在のバージョンでは、情報源のカスタマイズ機能は提供しておりません。今後のアップデートで実装を検討しています。",
     },
     {
       question: "バグの報告やフィードバックはどこから送れますか？",
       answer:
-        'ありがとうございます。バグ報告やサービスに関するご意見・ご感想は、<a href="/contact" class="text-blue-600 hover:underline">お問い合わせページ</a>よりご連絡いただけますと幸いです。',
+        'ありがとうございます。バグ報告やサービスに関するご意見・ご感想は、<a href="/links/contact" class="text-blue-600 hover:underline">お問い合わせページ</a>よりご連絡いただけますと幸いです。',
     },
   ];
 

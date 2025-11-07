@@ -1,3 +1,6 @@
+/*
+kinn00kinn/pando/PanDo-f8b140cd538de0b9dffd171838892a1e2efe0883/frontend/src/app/components/Timeline.tsx の修正
+*/
 // frontend/src/app/components/Timeline.tsx
 "use client";
 
@@ -11,19 +14,17 @@ function isAd(item: FeedItem): item is { type: "ad"; id: string } {
   return "type" in item && item.type === "ad";
 }
 
-// ★ sortMode を props で受け取る
 export default function Timeline({
   sortMode,
   myLikesOnly = false,
-  myBookmarksOnly = false, // 1. myBookmarksOnly を Props に追加
+  myBookmarksOnly = false,
+  isTutorialActive = false, // ★ 1. isTutorialActive を Props に追加
 }: {
   sortMode: string;
   myLikesOnly?: boolean;
   myBookmarksOnly?: boolean;
+  isTutorialActive?: boolean; // ★ 1. isTutorialActive を Props に追加
 }) {
-  // ★ useInfiniteFeed に sortMode を渡す
-  // ★ mutate も受け取る
-
   const { items, isLoading, hasMore, error, ref, mutate } = useInfiniteFeed(
     sortMode,
     myLikesOnly,
@@ -32,6 +33,7 @@ export default function Timeline({
 
   // エラー表示 (変更なし)
   if (error) {
+    // ... (省略) ...
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center border-b-2 border-black">
         <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
@@ -45,16 +47,30 @@ export default function Timeline({
 
   return (
     <div className="flex flex-col">
-      {items.map((item) => {
+      {/* ★ 2. map に index を追加 */}
+      {items.map((item, index) => {
         if (isAd(item)) {
           return <AdCard key={item.id} />;
         }
-        // ★ ArticleCard に mutate 関数を渡す (いいねの即時反映のため)
+
+        // ★ 3. 最初の記事 (index 0) かつ広告でない場合に ID を設定
+        const isFirstArticle = index === 0;
+        const tutorialIds =
+          isTutorialActive && isFirstArticle
+            ? {
+                like: "tutorial-like-button",
+                bookmark: "tutorial-bookmark-button",
+                comment: "tutorial-comment-button",
+                share: "tutorial-share-button",
+              }
+            : undefined;
+
         return (
           <ArticleCard
             key={item.id}
             article={item}
             onLikeSuccess={() => mutate()}
+            tutorialIds={tutorialIds} // ★ 4. ArticleCard に ID を渡す
           />
         );
       })}
