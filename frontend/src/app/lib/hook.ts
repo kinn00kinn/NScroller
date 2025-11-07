@@ -30,12 +30,14 @@ const PAGE_SIZE = 20;
 // ★ sortMode と myLikesOnly を引数に追加
 export function useInfiniteFeed(
   sortMode: string = "recent",
-  myLikesOnly: boolean = false
+  myLikesOnly: boolean = false,
+  myBookmarksOnly: boolean = false // ★★★ パラメータ追加 ★★★
 ) {
   const { ref, inView } = useInView({ threshold: 0.5 });
 
   const { data, error, size, setSize, isValidating, mutate } =
     useSWRInfinite<ApiResponse>((pageIndex, previousPageData) => {
+      const apiSortMode = sortMode === "recommended" ? "likes" : "recent";
       // 前のページが最後のページだったら、nullを返して停止
       if (previousPageData && !previousPageData.hasMore) {
         return null;
@@ -44,9 +46,12 @@ export function useInfiniteFeed(
       // ★ URLに sort と liked_by_user を追加
       let url = `/api/posts?page=${
         pageIndex + 1
-      }&limit=${PAGE_SIZE}&sort=${sortMode}`;
+      }&limit=${PAGE_SIZE}&sort=${apiSortMode}`;
       if (myLikesOnly) {
         url += "&liked_by_user=true";
+      }
+      if (myBookmarksOnly) {
+        url += "&bookmarked_by_user=true";
       }
       return url;
     }, fetcher);

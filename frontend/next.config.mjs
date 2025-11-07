@@ -16,9 +16,14 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "ddkzwseifqzfifwigjvs.supabase.co", // エラーに出たホスト名
+        port: "",
+        pathname: "/storage/v1/object/public/avatars/**", // avatarsバケットのパス
+      },
     ],
   },
 };
 
 export default nextConfig;
-

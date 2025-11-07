@@ -1,5 +1,4 @@
-
-![](frontend/public/Pando_banner_1000.gif)
+![banner](/frontend/public/Pando_banner_1000.gif)
 
 # PanDo - フロントエンド (`frontend/README.md`)
 
@@ -10,22 +9,26 @@ Next.js (App Router), TypeScript, TailwindCSSで構築されたPanDo (パンド�
 このフロントエンドは、見た目以上に多くの機能を実装しています。
 
   * **認証 (NextAuth):**
-      * `app/api/auth/[...nextauth]/route.ts` でNextAuthをセットアップしています。
+      * `app/api/auth/[...nextauth]/route.ts`/route.ts] でNextAuth.js (v4) をセットアップしています。
       * Googleプロバイダー (`GoogleProvider`) を使用します。
-      * Supabaseのアダプター (`SupabaseAdapter`) を使用し、認証情報をSupabaseの`users`, `accounts`テーブル等に自動で保存します。
+      * Supabaseのアダプター (`@auth/supabase-adapter`) を使用し、認証情報をSupabaseのテーブル（`next_auth.users`, `next_auth.accounts`等）に自動で保存します。
   * **データ取得 (SWR Infinite Scroll):**
       * メインのタイムライン (`app/components/Timeline.tsx`) は、カスタムフック `useInfiniteFeed` (`app/lib/hook.ts`) を使用します。
-      * このフックは `useSWRInfinite` を利用し、`GET /api/posts` APIをページネーションしながら継続的に呼び出します。
+      * このフックは `useSWRInfinite` を利用し、`GET /api/posts` API をページネーションしながら継続的に呼び出します。
   * **記事API (`GET /api/posts`):**
       * `app/api/posts/route.ts` で定義されています。
-      * Supabaseのパブリッククライアントを使用し、`articles` テーブルから記事を `published_at` の降順で取得します。
-      * `page` と `limit` (最大100) のクエリパラメータに対応し、無限スクロールを実現します。
+      * SupabaseのRPC（`get_feed_articles`, `get_my_liked_articles`）を呼び出し、`is_liked` や `is_bookmarked` の状態を含めた記事データを返します。
   * **いいね機能 (`POST /api/like`):**
-      * 記事カード (`app/components/ArticleCard.tsx`) は、`useSession` でログイン状態を監視します。
-      * ログイン時（`session` がある場合）に「いいね」ボタンを押すと、`POST /api/like` にリクエストを送信します。
-      * `app/api/like/route.ts` はリクエストを受け取り、SupabaseのRPC（データベース関数） `increment_like_num` を呼び出して、`articles` テーブルの `like_num` カラムをアトミックに（安全に）増減させます。
+      * `app/api/like/route.ts` は、SupabaseのRPC `increment_like_num` を呼び出し、`articles` テーブルの `like_num` をアトミックに増減させます。
+  * **ブックマーク機能 (`POST /api/bookmark`):**
+      * `app/api/bookmark/route.ts` (新規) は、`user_bookmarks` テーブルへの挿入/削除と、RPC `increment_bookmark_num` を呼び出します。
+      * `app/my-bookmarks/page.tsx` (新規) でブックマーク一覧を表示します。
+  * **プロフィール編集機能 (`POST /api/profile`):**
+      * `app/profile/page.tsx` (新規) でニックネームとアイコン画像の変更UIを提供します。
+      * `app/api/profile/upload-icon/route.ts` (新規) がBase64画像を受け取り、Supabase Storage (`avatars` バケット) にアップロードします。
+      * `app/api/profile/route.ts` (新規) が、`next_auth.users` テーブルの `name` と `image` カラムを更新します。
   * **広告の動的挿入:**
-      * `app/lib/hook.ts` 内で、取得した記事フィードに対し、ランダムな間隔（3〜7件ごと）で動的に広告カード (`AdCard.tsx`) が挿入されるロジックが実装されています。
+      * `app/lib/hook.ts` 内で、取得した記事フィードに対し、ランダムな間隔で動的に広告カード (`AdCard.tsx`) が挿入されるロジックが実装されています。
 
 -----
 
@@ -54,8 +57,8 @@ npm install
 NEXT_PUBLIC_SUPABASE_URL="YOUR_SUPABASE_URL"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
 
-# 2. Supabase (NextAuthアダプタ用)
-# Supabaseプロジェクトの「Database」>「Roles」または「Project Settings」>「API」>「Service Role Key」
+# 2. Supabase (バックエンドAPI / NextAuthアダプタ用)
+# Supabaseプロジェクトの「Project Settings」>「API」>「Service Role Key」
 # (注: 'service_role' キー。Anonキーとは別物です)
 SUPABASE_SERVICE_ROLE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY"
 
@@ -84,14 +87,20 @@ npm run dev
 
 ## 3\. 主要なAPIルート
 
-このフロントエンドは、外部にデータを公開するだけでなく、自身の機能のために複数の内部API（Route Handlers）を定義しています。
+このフロントエンドは、自身の機能のために複数の内部API（Route Handlers）を定義しています。
 
   * **`GET /api/posts`**
       * タイムラインに表示する記事データをページネーション付きで返します。
-  * **`POST /api/like`**
-      * 記事の「いいね」数をインクリメントまたはデクリメントします。
   * **`GET /api/auth/*`**
-      * NextAuthが使用する認証関連のエンドポイント（サインイン、サインアウト、コールバック処理など）。
+      * NextAuthが使用する認証関連のエンドポイント（サインイン、コールバックなど）。
+  * **`POST /api/like`**
+      * 記事の「いいね」数を増減させます。
+  * **`POST /api/bookmark` (新規)**
+      * 記事のブックマーク状態を追加・削除します。
+  * **`POST /api/profile` (新規)**
+      * 認証中ユーザーの `name` と `image` URLを更新します。
+  * **`POST /api/profile/upload-icon` (新規)**
+      * プロフィール編集用のアイコン画像をSupabase Storageにアップロードします。
 
 -----
 
@@ -107,18 +116,32 @@ npm run dev
 
 -----
 
-## 5\. 注意点
+## 5\. 注意点とデバッグ
 
   * **画像ドメイン:**
-      * `next.config.mjs` には、NextAuth経由で取得するGoogleユーザーのアバター画像 (`lh3.googleusercontent.com`) を表示するための `remotePatterns` が設定されています。
-  * **Supabase RPC:**
-      * 「いいね」機能は、Supabase側で `increment_like_num` という名前のSQL関数（RPC）が定義されていることを前提としています。
+      * `next.config.mjs` には、NextAuth経由のGoogleアバター (`lh3.googleusercontent.com`) と、**Supabase Storage** (`YOUR_PROJECT_ID.supabase.co`) のホスト名を `remotePatterns` に登録する必要があります。
+  * **Supabase Storage:**
+      * プロフィール編集機能を使うには、`avatars` という名前の**パブリック (Public) バケット**がSupabase Storageに作成されている必要があります。
+  * **Supabase RPC と スキーマ:**
+      * `いいね`、`ブックマーク`、`記事取得` 機能は、Supabase側で以下のSQL関数（RPC）が定義されていることを前提としています。
+          * `increment_like_num`
+          * `increment_bookmark_num` (新規)
+          * `get_feed_articles` (改修)
+          * `get_my_liked_articles` (改修)
+          * `get_my_bookmarked_articles` (新規)
+      * NextAuthアダプタは、`public` ではなく `next_auth` スキーマに `users` テーブルを作成する場合があります。APIが `Could not find the table 'public.users'` エラーを返す場合、APIルート (`/api/profile`) 内で `supabase.schema("next_auth").from("users")` のようにスキーマを明示的に指定する必要があります。
+      * RPCの戻り値（`SELECT` する列）を変更した場合、`DROP FUNCTION ...;` してから `CREATE FUNCTION ...;` し直さないと `cannot change return type` エラーが発生します。
+      * RPCがテーブルやカラムを見つけられない場合、Supabase APIのキャッシュが古い可能性があります。SQL Editorで `NOTIFY pgrst, 'reload schema'` を実行すると解決することがあります。
+  * **Supabase RLS:**
+      * `user_likes` や `user_bookmarks` テーブルには、`upsert` や `delete` のために複合プライマリキー `(user_id, article_id)` と、`authenticated` ロールに対するRLSポリシーが設定されている必要があります。
 
 -----
 
 -----
 
 # PanDo - バックエンド (`backend/README.md`)
+
+（※バックエンド側のREADMEは、フロントエンドの機能追加による変更がないため、元の内容を維持します）
 
 このバックエンドは、Pythonスクリプトで構成されたデータ収集バッチです。
 GitHub Actionsによって定期的に実行され、Google Custom Search APIから**パンダ関連のニュース**を収集し、Supabaseデータベースに保存・クリーンアップします。
@@ -134,7 +157,7 @@ GitHub Actionsによって定期的に実行され、Google Custom Search APIか
       * `search_panda_images.py` を呼び出して記事データを収集します。
       * `database_manager.py` を呼び出してデータを保存・削除します。
   * **`search_panda_images.py` (データ収集):**
-      * `fetch_cute_animal_news` 関数（※名前に反し、実装はパンダ専用）が、Google Custom Search API (`customsearch/v1`) を使用します。
+      * `fetch_from_google_search` 関数が、Google Custom Search API (`customsearch/v1`) を使用します。
       * `'panda OR "giant panda" ...'` というクエリで、過去24時間 (`dateRestrict: "d1"`) の**画像検索**結果を最大100件（10ページx10件）取得します。
       * `get_main_image` 関数が、記事の元URL（コンテキストリンク）をスクレイピングし、OGP画像（`og:image`）など最適な画像URLを抽出します。
   * **`database_manager.py` (DB管理):**

@@ -11,6 +11,8 @@ export type Article = {
 
   // ログイン中のユーザーがいいねしたか (RPCから取得)
   is_liked: boolean;
+  bookmark_num: number;
+  is_bookmarked: boolean;
 
   // 上位3件のコメント (RPCから取得)
   comments: Comment[];
