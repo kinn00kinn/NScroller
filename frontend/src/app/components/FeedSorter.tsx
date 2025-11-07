@@ -3,10 +3,12 @@
 
 import React from "react";
 
+// ...
 type Props = {
-  sortMode: "recent" | "likes";
-  setSortMode: (mode: "recent" | "likes") => void;
+  sortMode: "recent" | "recommended"; // ★ "recommended" (mを2つ) に修正
+  setSortMode: (mode: "recent" | "recommended") => void; // ★ "recommended" (mを2つ) に修正
 };
+// ...
 
 // 選択中のスタイル
 const activeTabStyle = "border-b-4 border-blue-500 font-bold text-black";
@@ -28,13 +30,13 @@ export default function FeedSorter({ sortMode, setSortMode }: Props) {
           sortMode === "recent" ? activeTabStyle : inactiveTabStyle
         }`}
       >
-        おすすめ
+        最新
       </button>
       <div className="w-px bg-black h-auto"></div> {/* 縦の区切り線 */}
       <button
-        onClick={() => setSortMode("likes")}
+        onClick={() => setSortMode("recommended")}
         className={`flex-1 py-3 text-center transition-colors ${
-          sortMode === "likes" ? activeTabStyle : inactiveTabStyle
+          sortMode === "recommended" ? activeTabStyle : inactiveTabStyle
         }`}
       >
         いいね

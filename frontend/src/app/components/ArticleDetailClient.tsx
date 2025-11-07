@@ -136,14 +136,15 @@ function CommentList({ articleId }: { articleId: string }) {
       </div>
     );
 
-  const { comments } = data as { comments: Comment[] };
+  const { comments: rawComments } = data as { comments: Comment[] };
+  // ★ 2. created_at で昇順ソート (古いものが先頭)
+  const comments = rawComments.sort((a, b) => 
+    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
 
   return (
     <div className="flex flex-col">
-      <CommentForm
-        articleId={articleId}
-        onCommentPosted={handleCommentPosted}
-      />
+      
 
       {comments.length === 0 ? (
         <div className="p-4 border-b-2 border-black text-center text-gray-500">
@@ -185,6 +186,10 @@ function CommentList({ articleId }: { articleId: string }) {
           </div>
         ))
       )}
+      <CommentForm
+        articleId={articleId}
+        onCommentPosted={handleCommentPosted}
+      />
     </div>
   );
 }
