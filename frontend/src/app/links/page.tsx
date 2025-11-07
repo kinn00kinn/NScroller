@@ -3,12 +3,12 @@ import Link from "next/link";
 
 const LinksPage = () => {
   const siteLinks = [
-    { href: "/about", text: "NScrollerについて" },
-    { href: "/terms", text: "利用規約" },
-    { href: "/policy", text: "プライバシーポリシー" },
-    { href: "/help", text: "ヘルプセンター" },
-    { href: "/ads", text: "広告掲載のご案内" },
-    { href: "/contact", text: "お問い合わせ" },
+    { href: "links/about", text: "NScrollerについて" },
+    { href: "links/terms", text: "利用規約" },
+    { href: "links/policy", text: "プライバシーポリシー" },
+    { href: "links/help", text: "ヘルプセンター" },
+    { href: "links/ads", text: "広告掲載のご案内" },
+    { href: "links/contact", text: "お問い合わせ" },
   ];
 
   return (
