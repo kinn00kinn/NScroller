@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { ArrowLeft, Loader2, User, Camera, Check } from "lucide-react";
 import Image from "next/image";
-import { supabase } from "@/app/lib/supabase"; // クライアントSupaClientをインポート
+// import { supabase } from "@/app/lib/supabase"; // クライアントSupaClientをインポート
 
 // ★ ファイルをBase64に変換するヘルパー関数
 const fileToBase64 = (file: File): Promise<string> => {
