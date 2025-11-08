@@ -47,6 +47,60 @@ const AdsPage = () => {
               </p>
             </section>
 
+            {/* ★★★ ここから新規追加 ★★★ */}
+            <section>
+              <h2 className="text-xl font-bold mb-2">
+                広告掲載プランのご提案
+              </h2>
+              <p className="mb-4">
+                PanDoのタイムラインに自然に溶け込む、ドット絵スタイルの広告枠をご用意しています。
+              </p>
+              
+              <div className="space-y-6">
+                {/* --- プラン1 --- */}
+                <div className="border-2 border-black rounded-lg p-4">
+                  <h3 className="font-bold text-lg mb-2">プランA: タイムライン掲載プラン</h3>
+                  <p className="text-sm mb-3">
+                    お客様がご用意した広告バナーを、タイムラインのフィード内に1ヶ月間掲載します。
+                  </p>
+                  <ul className="list-disc list-inside text-sm pl-4 space-y-1">
+                    <li>掲載期間: 1ヶ月</li>
+                    <li>表示箇所: タイムライン内 (一定間隔で表示)</li>
+                    <li>形式: 画像バナー (お客様にてご用意)</li>
+                  </ul>
+                </div>
+
+                {/* --- プラン2 --- */}
+                <div className="border-2 border-black rounded-lg p-4 bg-gray-50">
+                  <span className="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full mb-2">
+                    おすすめ
+                  </span>
+                  <h3 className="font-bold text-lg mb-2">プランB: ドット絵広告 制作・掲載プラン</h3>
+                  <p className="text-sm mb-3">
+                    PanDoのサイトデザインを手掛けたドット絵クリエイターが、お客様のサービスや商品のための**オリジナル広告バナー（ドット絵）**を制作し、タイムラインに1ヶ月間掲載します。
+                  </p>
+                  <ul className="list-disc list-inside text-sm pl-4 space-y-1">
+                    <li>上記プランAの内容</li>
+                    <li>PanDoクリエイターによる広告バナー制作</li>
+                  </ul>
+                </div>
+
+                {/* --- 特典 --- */}
+                <div className="border-2 border-black rounded-lg p-4">
+                  <h3 className="font-bold text-lg mb-2">全プラン共通オプション</h3>
+                  <p className="text-sm mb-3">
+                    広告効果を最大化するため、以下の特別な設定も可能です。
+                  </p>
+                  <ul className="list-disc list-inside text-sm pl-4 space-y-1">
+                    <li>
+                      広告記事専用の「いいね」「ブックマーク」アニメーション設定
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+            {/* ★★★ 追加ここまで ★★★ */}
+
             <section className="border-2 border-black p-4 text-center">
               <h2 className="text-xl font-bold mb-3">お問い合わせ</h2>
               <p className="mb-3">

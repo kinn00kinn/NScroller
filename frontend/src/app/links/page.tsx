@@ -6,8 +6,10 @@ const LinksPage = () => {
   // ★ リンクのテキストと順序を修正
   const siteLinks = [
     { href: "links/about", text: "PanDo (パンドゥ) について" },
+    { href: "links/news", text: "公式からのお知らせ" },
     { href: "links/help", text: "よくある質問 (FAQ)" },
     { href: "links/credits", text: "素材・ライセンス" }, // ★ 新規追加
+    { href: "links/creator", text: "クリエイター紹介" },
     { href: "links/terms", text: "利用規約" },
     { href: "links/policy", text: "プライバシーポリシー" },
     { href: "links/ads", text: "広告掲載について" },

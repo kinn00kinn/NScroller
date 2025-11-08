@@ -9,7 +9,10 @@ import Image from "next/image";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { User, X, Heart, UserCog, Bookmark, Info,  HelpCircle,} from "lucide-react";
+import {
+  User,
+  X,
+} from "lucide-react";
 import FeedSorter from "@/app/components/FeedSorter";
 // ★ 1. インポート先を変更
 import InteractiveTutorial from "@/app/components/InteractiveTutorial";
@@ -142,7 +145,13 @@ export default function Home() {
                     className="flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
                     id="tutorial-menu-likes"
                   >
-                    <Heart size={16} />
+                    <Image
+                      src={"icon/like_on.png"}
+                      alt="いいね"
+                      width={18}
+                      height={18}
+                      unoptimized // GIFアニメーションのため
+                    />
                     <span>いいねした投稿</span>
                   </Link>
                 )}
@@ -152,7 +161,14 @@ export default function Home() {
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
                   >
-                    <Bookmark size={16} />
+                    {/* <Bookmark size={16} /> */}
+                    <Image
+                      src={"icon/bookmark_on.png"}
+                      alt="ブックマーク"
+                      width={18}
+                      height={18}
+                      unoptimized // GIFアニメーションのため
+                    />
                     <span>ブックマーク</span>
                   </Link>
                 )}
@@ -162,7 +178,13 @@ export default function Home() {
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
                   >
-                    <UserCog size={16} />
+                    <Image
+                      src={"icon/user.png"}
+                      alt="ユーザー"
+                      width={18}
+                      height={18}
+                      unoptimized // GIFアニメーションのため
+                    />
                     <span>プロフィール編集</span>
                   </Link>
                 )}
@@ -171,7 +193,13 @@ export default function Home() {
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
                 >
-                  <Info size={16} />
+                  <Image
+                    src={"icon/exclamation.png"}
+                    alt="インフォーメション"
+                    width={18}
+                    height={18}
+                    unoptimized // GIFアニメーションのため
+                  />
                   <span>インフォメーション</span>
                 </Link>
                 {/* ★ 3. チュートリアル再開ボタンを追加 */}
@@ -179,7 +207,13 @@ export default function Home() {
                   onClick={handleRestartTutorial}
                   className="flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
                 >
-                  <HelpCircle size={16} />
+                  <Image
+                    src={"icon/question.png"}
+                    alt="チュートリアル"
+                    width={18}
+                    height={18}
+                    unoptimized // GIFアニメーションのため
+                  />
                   <span>チュートリアル</span>
                 </button>
                 {session ? (

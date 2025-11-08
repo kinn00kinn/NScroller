@@ -25,7 +25,9 @@ const AboutPage = () => {
 
           <div className="space-y-8">
             <section>
-              <h2 className="text-xl font-bold mb-2">PanDo (パンドゥ) とは？</h2>
+              <h2 className="text-xl font-bold mb-2">
+                PanDo (パンドゥ) とは？
+              </h2>
               <p>
                 PanDo (パンドゥ)
                 は、世界中のパンダに関する最新ニュース、ブログ、動画などを自動で集約し、X（旧Twitter）のようなタイムライン形式で「受動的」に最新情報をキャッチアップできる、パンダ特化型の情報アグリゲーションサービスです。
@@ -48,7 +50,9 @@ const AboutPage = () => {
                 PanDoでは、信頼性の高い以下の情報源からコンテンツを収集しています。（順次拡大予定）
               </p>
               <ul className="list-disc list-inside mt-2 pl-4 space-y-1">
-                <li>国内外の主要な動物園（上野動物園、アドベンチャーワールドなど）</li>
+                <li>
+                  国内外の主要な動物園（上野動物園、アドベンチャーワールドなど）
+                </li>
                 <li>主要なニュースメディア（パンダ関連）</li>
                 <li>動物保護団体の公式ブログ</li>
                 <li>パンダ関連の主要な個人ブログやSNS</li>
