@@ -2,29 +2,42 @@
 kinn00kinn/pando/PanDo-f8b140cd538de0b9dffd171838892a1e2efe0883/frontend/src/app/links/ads/page.tsx の更新案
 */
 import React from "react";
+import Link from "next/link"; // ★ インポート追加
+import { ArrowLeft } from "lucide-react"; // ★ インポート追加
 
 const AdsPage = () => {
   return (
     <div className="flex justify-center bg-white text-black">
       <div className="w-full max-w-xl">
-        <header className="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-10">
-          <div className="px-4 py-3 border-b-2 border-black">
-            <h1 className="text-xl font-bold text-center">広告掲載のご案内</h1>
+        {/* ★ ヘッダーを矢印アイコン形式に修正 */}
+        <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm p-2 border-b-2 border-black flex items-center space-x-4">
+          <Link
+            href="/links"
+            className="p-2 hover:bg-gray-100 rounded-full"
+            aria-label="戻る"
+          >
+            <ArrowLeft size={20} />
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold">広告掲載のご案内</h1>
           </div>
         </header>
+
         <main className="border-x-2 border-b-2 border-black p-6">
-          <a
+          {/* ★ main タグ内の戻るボタンを削除 */}
+          {/* <a
             href="/links"
             className="inline-block text-blue-600 border-y-2 border-x-2 border-black 
              p-2 mb-8 hover:bg-gray-100 transition-colors"
           >
             ◀Linkに戻る
-          </a>
-          <div className="space-y-8">
+          </a> */}
+          <div className="space-y-8 pt-6">
+            {" "}
+            {/* ★ 削除したボタンの代わりにpt-6を追加 */}
             <p>
               パンダを愛する多くのユーザーに、あなたのプロダクトやサービスを届けませんか？
             </p>
-
             <section>
               <h2 className="text-xl font-bold mb-2">
                 PanDoの強み: ターゲットオーディエンス
@@ -39,14 +52,12 @@ const AdsPage = () => {
                 <li>環境保護に関心のある方</li>
               </ul>
             </section>
-
             <section>
               <h2 className="text-xl font-bold mb-2">なぜPanDoなのか？</h2>
               <p>
                 一般的なSNSや広告プラットフォームとは異なり、PanDoは「パンダ」という単一のテーマに特化しています。ユーザーは明確な目的を持ってサービスを利用しているため、広告への関心度も高く、質の高いエンゲージメントが期待できます。
               </p>
             </section>
-
             {/* ★★★ ここから新規追加 ★★★ */}
             <section>
               <h2 className="text-xl font-bold mb-2">
@@ -55,11 +66,13 @@ const AdsPage = () => {
               <p className="mb-4">
                 PanDoのタイムラインに自然に溶け込む、ドット絵スタイルの広告枠をご用意しています。
               </p>
-              
+
               <div className="space-y-6">
                 {/* --- プラン1 --- */}
                 <div className="border-2 border-black rounded-lg p-4">
-                  <h3 className="font-bold text-lg mb-2">プランA: タイムライン掲載プラン</h3>
+                  <h3 className="font-bold text-lg mb-2">
+                    プランA: タイムライン掲載プラン
+                  </h3>
                   <p className="text-sm mb-3">
                     お客様がご用意した広告バナーを、タイムラインのフィード内に1ヶ月間掲載します。
                   </p>
@@ -75,7 +88,9 @@ const AdsPage = () => {
                   <span className="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full mb-2">
                     おすすめ
                   </span>
-                  <h3 className="font-bold text-lg mb-2">プランB: ドット絵広告 制作・掲載プラン</h3>
+                  <h3 className="font-bold text-lg mb-2">
+                    プランB: ドット絵広告 制作・掲載プラン
+                  </h3>
                   <p className="text-sm mb-3">
                     PanDoのサイトデザインを手掛けたドット絵クリエイターが、お客様のサービスや商品のための**オリジナル広告バナー（ドット絵）**を制作し、タイムラインに1ヶ月間掲載します。
                   </p>
@@ -100,7 +115,6 @@ const AdsPage = () => {
               </div>
             </section>
             {/* ★★★ 追加ここまで ★★★ */}
-
             <section className="border-2 border-black p-4 text-center">
               <h2 className="text-xl font-bold mb-3">お問い合わせ</h2>
               <p className="mb-3">

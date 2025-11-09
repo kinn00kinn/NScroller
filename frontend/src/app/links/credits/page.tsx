@@ -2,25 +2,39 @@
 frontend/src/app/links/credits/page.tsx (新規作成)
 */
 import React from "react";
+import Link from "next/link"; // ★ インポート追加
+import { ArrowLeft } from "lucide-react"; // ★ インポート追加
 
 const CreditsPage = () => {
   return (
     <div className="flex justify-center bg-white text-black">
       <div className="w-full max-w-xl">
-        <header className="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-10">
-          <div className="px-4 py-3 border-b-2 border-black">
-            <h1 className="text-xl font-bold text-center">素材・ライセンス</h1>
+        {/* ★ ヘッダーを矢印アイコン形式に修正 */}
+        <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm p-2 border-b-2 border-black flex items-center space-x-4">
+          <Link
+            href="/links"
+            className="p-2 hover:bg-gray-100 rounded-full"
+            aria-label="戻る"
+          >
+            <ArrowLeft size={20} />
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold">素材・ライセンス</h1>
           </div>
         </header>
+
         <main className="border-x-2 border-b-2 border-black p-6">
-          <a
+          {/* ★ main タグ内の戻るボタンを削除 */}
+          {/* <a
             href="/links"
             className="inline-block text-blue-600 border-y-2 border-x-2 border-black 
              p-2 mb-8 hover:bg-gray-100 transition-colors"
           >
             ◀Linkに戻る
-          </a>
-          <div className="space-y-8">
+          </a> */}
+          <div className="space-y-8 pt-6">
+            {" "}
+            {/* ★ 削除したボタンの代わりにpt-6を追加 */}
             <section>
               <h2 className="text-xl font-bold mb-2">PanDo独自のアセット</h2>
               <p>
@@ -28,7 +42,6 @@ const CreditsPage = () => {
                 (パンドゥ)」のために独自に作成されたドット絵、イラスト、ロゴ、アニメーション（いいね・ブックマーク時のアニメーションGIFを含む）の著作権は、すべてPanDoの運営に帰属します。
               </p>
             </section>
-
             <section>
               <h2 className="text-xl font-bold mb-2">
                 テクノロジーとライブラリ
@@ -105,7 +118,6 @@ const CreditsPage = () => {
                 </li>
               </ul>
             </section>
-
             <section>
               <h2 className="text-xl font-bold mb-2">アイコンとフォント</h2>
               <ul className="list-disc list-inside mt-2 pl-4 space-y-1 text-sm">
@@ -135,7 +147,6 @@ const CreditsPage = () => {
                 </li>
               </ul>
             </section>
-
             <section>
               <h2 className="text-xl font-bold mb-2">ホスティング</h2>
               <ul className="list-disc list-inside mt-2 pl-4 space-y-1 text-sm">
@@ -152,7 +163,6 @@ const CreditsPage = () => {
                 </li>
               </ul>
             </section>
-
             <section>
               <h2 className="text-xl font-bold mb-2">情報源</h2>
               <p>
