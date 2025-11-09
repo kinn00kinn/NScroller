@@ -8,7 +8,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!; // ★ サー
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = 'https://[あなたのサイトのドメイン]'; // ★ あなたのサイトのURLに変更
+  const siteUrl = 'https://n-scroller.vercel.app'; // ★ あなたのサイトのURLに変更
 
   // 1. 静的なページのルートを追加
   const staticRoutes = [
