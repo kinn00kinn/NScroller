@@ -271,6 +271,7 @@ export default function ArticleDetailClient({
       <ArticleCard
         article={liveArticle}
         onOptimisticUpdate={handleOptimisticUpdate}
+        onLikeSuccess={handleLikeSuccess} // ★★★ この行を追加 ★★★
       />
 
       {/* コメントリスト（SWRでクライアントで取得） */}
