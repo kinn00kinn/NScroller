@@ -1,15 +1,15 @@
 /*
-kinn00kinn/pando/PanDo-f8b140cd538de0b9dffd171838892a1e2efe0883/frontend/src/app/links/policy/page.tsx の更新案
+kinn00kinn/pando/frontend/src/app/links/policy/page.tsx の更新案
 */
 import React from "react";
-import Link from "next/link"; // ★ インポート追加
-import { ArrowLeft } from "lucide-react"; // ★ インポート追加
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 const PolicyPage = () => {
   return (
     <div className="flex justify-center bg-white text-black">
       <div className="w-full max-w-xl">
-        {/* ★ ヘッダーを矢印アイコン形式に修正 */}
+        {/* ヘッダー (変更なし) */}
         <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm p-2 border-b-2 border-black flex items-center space-x-4">
           <Link
             href="/links"
@@ -23,80 +23,122 @@ const PolicyPage = () => {
           </div>
         </header>
 
+        {/* メインコンテンツ (テキスト部分を修正) */}
         <main className="border-x-2 border-b-2 border-black p-6">
-          {/* ★ main タグ内の戻るボタンを削除 */}
-          {/* <a
-            href="/links"
-            className="inline-block text-blue-600 border-y-2 border-x-2 border-black 
-             p-2 mb-8 hover:bg-gray-100 transition-colors"
-          >
-            ◀Linkに戻る
-          </a> */}
           <div className="space-y-6 pt-6">
-            {" "}
-            {/* ★ 削除したボタンの代わりにpt-6を追加 */}
-            <p className="text-sm text-right">最終更新日: 2025年11月4日</p>
+            <p className="text-sm text-right">最終更新日: 2025年11月9日</p>
             <p>
               PanDo (パンドゥ)
               （以下「当サービス」といいます）は、ユーザーのプライバシーを尊重し、個人情報の保護に努めています。本プライバシーポリシーは、当サービスの利用に関して、どのような情報を収集し、どのように利用するかを定めたものです。
             </p>
+            
             <section>
               <h2 className="text-xl font-bold mb-2">1. 収集する情報</h2>
               <p>
-                当サービスは、Google認証によるユーザー登録、コメント、いいね、ブックマーク機能を提供しています。
+                当サービスは、以下の情報を収集します。
               </p>
-              <p className="mt-2">
-                認証時に、Googleアカウントから提供される以下の情報を収集し、サービス提供（コメント投稿者の表示、プロフィール編集機能など）のために利用します。
+              <ul className="list-disc pl-6 mt-2 space-y-2">
+                <li>
+                  <strong>Google認証により提供される情報:</strong>
+                  <br />
+                  当サービスは、Google認証 (NextAuth.jsおよびSupabase
+                  Adapterを使用)
+                  を通じて、ユーザーの氏名、メールアドレス、プロフィール画像URLを取得します。これらは認証およびアカウント識別のためにのみ使用されます。
+                </li>
+                <li>
+                  <strong>ユーザーが任意で提供する情報:</strong>
+                  <br />
+                  プロフィール編集機能を利用する場合、ユーザーはニックネーム（氏名とは別）およびプロフィール画像（Googleアカウントとは別）を任意で設定できます。アップロードされた画像は、Supabase
+                  Storageに安全に保存されます。
+                </li>
+                <li>
+                  <strong>サービス利用により自動的に収集される情報:</strong>
+                  <br />
+                  ユーザーが「いいね」、「ブックマーク」、「コメント」機能を利用した際、その操作履歴（どのユーザーがどの記事に対して操作を行ったか）がSupabaseデータベースに記録されます。
+                </li>
+                <li>
+                  <strong>アクセス解析情報 (匿名):</strong>
+                  <br />
+                  サービス向上のため、Vercel
+                  AnalyticsやGoogle
+                  Analyticsなどの第三者ツールを使用し、Cookieを通じて匿名のトラフィックデータ（閲覧ページ、デバイス情報、地域など）を収集する場合があります。
+                </li>
+              </ul>
+            </section>
+            
+            <section>
+              <h2 className="text-xl font-bold mb-2">2. 情報の利用目的</h2>
+              <p>
+                収集した情報は、以下の目的で利用します。
               </p>
               <ul className="list-disc pl-6 mt-2">
-                <li>氏名（ニックネームとして利用）</li>
-                <li>メールアドレス（認証識別にのみ利用）</li>
-                <li>プロフィール画像URL</li>
+                <li>ユーザー認証およびアカウント管理のため。</li>
+                <li>
+                  コメント投稿者のニックネームやアイコンを表示するため。
+                </li>
+                <li>
+                  「いいねした投稿」や「ブックマークした投稿」のリストをユーザーごとに提供するため。
+                </li>
+                <li>
+                  サービスの利用状況を分析し、機能改善や不具合修正に役立てるため。
+                </li>
               </ul>
-              <p className="mt-2">
-                これら以外の個人を特定できる情報（住所、電話番号など）を収集することはありません。
-              </p>
             </section>
+            
             <section>
               <h2 className="text-xl font-bold mb-2">
-                2. アクセス解析ツールによる情報収集
+                3. 情報の第三者提供および委託
               </h2>
               <p>
-                当サービスでは、サービス向上のため、第三者（例：Vercel
-                Analytics, Google
-                Analytics）が提供するアクセス解析ツールを利用しています。これらのツールは、トラフィックデータを収集するためにCookieを使用することがあります。収集される情報には以下のようなものが含まれますが、これらは匿名で収集されており、個人を特定するものではありません。
+                当サービスは、以下の場合を除き、収集した個人情報をユーザーの同意なく第三者に提供することはありません。
               </p>
               <ul className="list-disc pl-6 mt-2">
-                <li>閲覧されたページ</li>
-                <li>デバイスの種類やOS</li>
-                <li>ブラウザの種類</li>
-                <li>おおよその地理的地域</li>
+                <li>法令に基づく開示請求があった場合。</li>
+                <li>
+                  サービスの運営に必要な範囲で、業務委託先に情報の取り扱いを委託する場合。
+                  <br />
+                  (例: データベースおよびストレージ機能のためにSupabase
+                  Inc.、ホスティングのためにVercel
+                  Inc.、認証のためにGoogle
+                  LLCにデータを保存・処理させる場合)
+                </li>
               </ul>
+            </section>
+            
+            <section>
+              <h2 className="text-xl font-bold mb-2">4. ユーザーの権利</h2>
               <p>
-                収集されたデータは、各社のプライバシーポリシーに基づいて管理されます。Cookieを無効にすることで、収集を拒否することも可能ですので、お使いのブラウザの設定をご確認ください。
+                ユーザーは、当サービスのプロフィール編集ページから、いつでも自身のニックネームとプロフィール画像を更新できます。
+                アカウントの削除や、保存された個人情報（いいね、コメント履歴を含む）の削除を希望される場合は、下記のお問い合わせ窓口までご連絡ください。
               </p>
             </section>
+            
             <section>
-              <h2 className="text-xl font-bold mb-2">3. 外部リンク</h2>
+              <h2 className="text-xl font-bold mb-2">5. 外部リンク</h2>
               <p>
                 当サービスは、外部のニュース記事やブログへのリンクを提供しています。リンク先のウェブサイトにおける個人情報の取り扱いについては、当サービスは責任を負いかねます。リンク先のプライバシーポリシーをご確認ください。
               </p>
             </section>
+            
             <section>
               <h2 className="text-xl font-bold mb-2">
-                4. プライバシーポリシーの変更
+                6. プライバシーポリシーの変更
               </h2>
               <p>
                 当サービスは、法令の変更やサービスのアップデートに伴い、本プライバシーポリシーを改定することがあります。重要な変更がある場合は、当ページにてお知らせします。
               </p>
             </section>
+            
             <section>
-              <h2 className="text-xl font-bold mb-2">5. お問い合わせ</h2>
+              <h2 className="text-xl font-bold mb-2">7. お問い合わせ</h2>
               <p>
                 本プライバシーポリシーに関するご質問は、
-                <a href="/links/contact" className="text-blue-600 hover:underline">
+                <Link
+                  href="/links/contact"
+                  className="text-blue-600 hover:underline"
+                >
                   お問い合わせページ
-                </a>
+                </Link>
                 よりご連絡ください。
               </p>
             </section>

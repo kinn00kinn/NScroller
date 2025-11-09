@@ -60,9 +60,7 @@ const AdsPage = () => {
             </section>
             {/* ★★★ ここから新規追加 ★★★ */}
             <section>
-              <h2 className="text-xl font-bold mb-2">
-                広告掲載プランのご提案
-              </h2>
+              <h2 className="text-xl font-bold mb-2">広告掲載プランのご提案</h2>
               <p className="mb-4">
                 PanDoのタイムラインに自然に溶け込む、ドット絵スタイルの広告枠をご用意しています。
               </p>
@@ -92,7 +90,7 @@ const AdsPage = () => {
                     プランB: ドット絵広告 制作・掲載プラン
                   </h3>
                   <p className="text-sm mb-3">
-                    PanDoのサイトデザインを手掛けたドット絵クリエイターが、お客様のサービスや商品のための**オリジナル広告バナー（ドット絵）**を制作し、タイムラインに1ヶ月間掲載します。
+                    PanDoのサイトデザインを手掛けたドット絵クリエイターが、お客様のサービスや商品のためのオリジナル広告バナー（ドット絵）を制作し、タイムラインに1ヶ月間掲載します。
                   </p>
                   <ul className="list-disc list-inside text-sm pl-4 space-y-1">
                     <li>上記プランAの内容</li>
@@ -102,7 +100,9 @@ const AdsPage = () => {
 
                 {/* --- 特典 --- */}
                 <div className="border-2 border-black rounded-lg p-4">
-                  <h3 className="font-bold text-lg mb-2">全プラン共通オプション</h3>
+                  <h3 className="font-bold text-lg mb-2">
+                    全プラン共通オプション
+                  </h3>
                   <p className="text-sm mb-3">
                     広告効果を最大化するため、以下の特別な設定も可能です。
                   </p>
@@ -115,18 +115,22 @@ const AdsPage = () => {
               </div>
             </section>
             {/* ★★★ 追加ここまで ★★★ */}
+            
             <section className="border-2 border-black p-4 text-center">
               <h2 className="text-xl font-bold mb-3">お問い合わせ</h2>
               <p className="mb-3">
                 広告掲載に関するご相談、料金プラン、その他ご質問については、下記メールアドレスまでお気軽にお問い合わせください。
               </p>
-              <a
-                href="mailto:ads@example.com?subject=PanDo広告掲載について"
-                className="text-blue-600 hover:underline"
-              >
-                ads@example.com
-              </a>
-              <p className="mt-3 text-sm">（※これはサンプルアドレスです）</p>
+              
+              {/* ★ <a> タグを削除し、[at] 記法に変更 */}
+              <div className="bg-gray-50 py-2">
+                <p className="text-lg font-mono font-semibold text-black">
+                  pando4408 [at] gmail.com
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  (お手数ですが、送信時に [at] を @ に置き換えてください)
+                </p>
+              </div>
             </section>
           </div>
         </main>
