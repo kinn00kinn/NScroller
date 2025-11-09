@@ -19,7 +19,8 @@ type Ad = {
 export type FeedItem = Article | Ad;
 
 // APIレスポンスの型 (APIの戻り値に合わせる)
-type ApiResponse = {
+// ★★★ 修正: 'export' を追加 ★★★
+export type ApiResponse = {
   articles: Article[];
   hasMore: boolean;
 };
