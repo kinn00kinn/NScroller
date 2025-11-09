@@ -15,7 +15,7 @@ import { useLanguage } from "@/app/components/LanguageProvider";
 type ArticleCardProps = {
   article: Article;
   // ★ 修正: 未使用変数の警告回避のため、引数名を _ で開始
-  onOptimisticUpdate?: (_articleId: string, _update: Partial<Article>) => void;
+  onOptimisticUpdate?: (articleId: string, update: Partial<Article>) => void;
   onLikeSuccess: () => void;
   tutorialIds?: TutorialIds;
 };

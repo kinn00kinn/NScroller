@@ -4,15 +4,23 @@ kinn00kinn/pando/PanDo-f8b140cd538de0b9dffd171838892a1e2efe0883/frontend/src/app
 // frontend/src/app/components/Timeline.tsx
 "use client";
 
-import { useInfiniteFeed, type FeedItem } from "@/app/lib/hook";
+import {
+  useInfiniteFeed,
+  type FeedItem,
+  type ApiResponse,
+} from "@/app/lib/hook";
 import ArticleCard from "./ArticleCard";
 import AdCard from "./AdCard";
 import { Loader2, AlertTriangle } from "lucide-react";
+import type { Article } from "@/app/lib/mockData";
 
 // Helper (変更なし)
 function isAd(item: FeedItem): item is { type: "ad"; id: string } {
   return "type" in item && item.type === "ad";
 }
+
+// ★★★ 修正: handleOptimisticUpdate 関数をコンポーネントの外側から削除 ★★★
+// (コンポーネントの内側に移動します)
 
 export default function Timeline({
   sortMode,
@@ -30,6 +38,28 @@ export default function Timeline({
     myLikesOnly,
     myBookmarksOnly
   );
+
+  // ★★★ 修正: 楽観的UIのためのハンドラを「コンポーネントの内側」に定義 ★★★
+  // これにより、上記の `mutate` を正しく参照できます
+  const handleOptimisticUpdate = (
+    articleId: string,
+    update: Partial<Article>
+  ) => {
+    // SWRInfiniteのキャッシュ(data)をイミュータブルに更新
+    mutate(
+      (currentData: ApiResponse[] | undefined) => {
+        if (!currentData) return [];
+        return currentData.map((page) => ({
+          ...page,
+          articles: page.articles.map((a) =>
+            a.id === articleId ? { ...a, ...update } : a
+          ),
+        }));
+      },
+      { revalidate: false } // この更新では再取得（revalidate）を行わない
+    );
+  };
+  // ★★★ 修正ここまで ★★★
 
   // エラー表示 (変更なし)
   if (error) {
@@ -72,6 +102,7 @@ export default function Timeline({
             onLikeSuccess={() => {
               mutate();
             }}
+            onOptimisticUpdate={handleOptimisticUpdate} // 正しく定義されたハンドラを渡す
             tutorialIds={tutorialIds} // ★ 4. ArticleCard に ID を渡す
           />
         );
