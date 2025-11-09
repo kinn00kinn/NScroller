@@ -2,22 +2,24 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Timeline from "@/app/components/Timeline"; // タイムラインコンポーネントを再利用
-import { ArrowLeft, Heart } from "lucide-react";
+import Timeline from "@/app/components/Timeline";
+import { ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React from "react";
+// ★ useLanguage フックをインポート
+import { useLanguage } from "@/app/components/LanguageProvider";
 
 export default function MyLikesPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  // ★ 言語フックを使用
+  const { t } = useLanguage();
 
-  // 認証状態のハンドリング
   if (status === "loading") {
     return <div className="flex justify-center items-center h-screen">...</div>;
   }
 
   if (status === "unauthenticated") {
-    // ログインページにリダイレクト (または 'signIn()')
     router.push("/");
     return null;
   }
@@ -35,18 +37,14 @@ export default function MyLikesPage() {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-xl font-bold">いいねした投稿</h1>
+            {/* ★ 翻訳を適用 */}
+            <h1 className="text-xl font-bold">{t("myLikesTitle")}</h1>
             <p className="text-sm text-gray-500">{session?.user?.name || ""}</p>
           </div>
         </header>
 
         {/* メインタイムライン */}
         <main className="border-x-2 border-b-2 border-black">
-          {/* Timelineコンポーネントを 'myLikesOnly' モードで再利用します。
-            useInfiniteFeedフックが 'liked_by_user=true' パラメータを
-            /api/posts に自動的に付与します。
-            ソートは 'recent' (いいねした順) のみとします。
-          */}
           <Timeline sortMode="recent" myLikesOnly={true} />
         </main>
       </div>

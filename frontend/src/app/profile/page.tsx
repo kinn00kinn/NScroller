@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { ArrowLeft, Loader2, User, Camera, Check } from "lucide-react";
 import Image from "next/image";
-// import { supabase } from "@/app/lib/supabase"; // クライアントSupaClientをインポート
+// ★ useLanguage フックをインポート
+import { useLanguage } from "@/app/components/LanguageProvider";
 
 // ★ ファイルをBase64に変換するヘルパー関数
 const fileToBase64 = (file: File): Promise<string> => {
@@ -20,7 +21,9 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { data: session, status, update: updateSession } = useSession(); // 'update' を取得
+  const { data: session, status, update: updateSession } = useSession();
+  // ★ 言語フックを使用
+  const { t } = useLanguage();
 
   const [name, setName] = useState("");
   const [avatarImage, setAvatarImage] = useState<File | null>(null);
@@ -28,7 +31,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // セッション読み込み時にフォームの初期値を設定
+  // ... (useEffect, handleAvatarChange, handleSubmit ハンドラは変更なし) ...
   useEffect(() => {
     if (session?.user) {
       setName(session.user.name || "");
@@ -36,13 +39,12 @@ export default function ProfilePage() {
     }
   }, [session]);
 
-  // ファイルが選択されたらプレビューを更新
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setAvatarImage(file);
       setAvatarPreview(URL.createObjectURL(file));
-      setIsSuccess(false); // 成功状態をリセット
+      setIsSuccess(false);
     }
   };
 
@@ -53,49 +55,35 @@ export default function ProfilePage() {
     const nameChanged = name !== session.user.name;
     const avatarChanged = !!avatarImage;
 
-    // どちらも変更がなければ何もしない
     if (!nameChanged && !avatarChanged) return;
 
     setIsLoading(true);
     setIsSuccess(false);
-    let newImageUrl: string | undefined = undefined; // 新しい画像のURLを格納する変数
+    let newImageUrl: string | undefined = undefined;
 
     try {
-      //
-      // ステップ 1: アイコンが変更された場合、専用APIにアップロード
-      //
       if (avatarImage) {
-        // 1a. ファイルを Base64 文字列に変換
         const base64File = await fileToBase64(avatarImage);
-
-        // 1b. 新しいAPI /api/profile/upload-icon (次のステップで作成) に送信
         const uploadResponse = await fetch("/api/profile/upload-icon", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             file: base64File,
             contentType: avatarImage.type,
-            fileExt: avatarImage.name.split(".").pop(), // "png" や "jpg" など
+            fileExt: avatarImage.name.split(".").pop(),
           }),
         });
-
         const uploadResult = await uploadResponse.json();
         if (!uploadResponse.ok) {
           throw new Error(
             uploadResult.error || "アイコンのアップロードに失敗しました"
           );
         }
-
-        newImageUrl = uploadResult.imageUrl; // APIから返された公開URLを取得
+        newImageUrl = uploadResult.imageUrl;
       }
 
-      //
-      // ステップ 2: /api/profile APIに (名前) と (新しい画像URL) を送信
-      //
       const updatePayload = {
         name: name,
-        // newImageUrl があれば (ステップ1で設定されたら) それを使い、
-        // なければ (アイコン変更なしなら) undefined を送る
         image_url: newImageUrl,
       };
 
@@ -107,21 +95,16 @@ export default function ProfilePage() {
 
       const profileResult = await profileResponse.json();
       if (!profileResponse.ok) {
-        // ここで 'public.users' エラーが出る場合は【手順1】が必要です
         throw new Error(
           profileResult.error || "プロフィールの更新に失敗しました"
         );
       }
 
-      //
-      // ステップ 3: クライアント側のセッションを更新 (即時反映のため)
-      //
       await updateSession({
         ...session,
         user: {
           ...session.user,
           name: name,
-          // 新しいURLがあればそれを、なければ既存のセッションの画像を使う
           image: newImageUrl || session.user.image,
         },
       });
@@ -132,9 +115,10 @@ export default function ProfilePage() {
       alert(error instanceof Error ? error.message : "エラーが発生しました");
     } finally {
       setIsLoading(false);
-      setAvatarImage(null); // ファイル選択をリセット
+      setAvatarImage(null);
     }
   };
+  
 
   if (status === "loading") {
     return (
@@ -144,7 +128,7 @@ export default function ProfilePage() {
     );
   }
   if (status === "unauthenticated") {
-    router.push("/"); // ログインしていない場合はホームへ
+    router.push("/");
     return null;
   }
 
@@ -161,7 +145,8 @@ export default function ProfilePage() {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-xl font-bold">プロフィール編集</h1>
+            {/* ★ 翻訳を適用 */}
+            <h1 className="text-xl font-bold">{t("profileTitle")}</h1>
           </div>
         </header>
 
@@ -171,6 +156,7 @@ export default function ProfilePage() {
             {/* アイコン編集 */}
             <div className="flex flex-col items-center space-y-2">
               <label htmlFor="avatarInput" className="cursor-pointer relative">
+                {/* ... (アイコンプレビューは変更なし) ... */}
                 {avatarPreview ? (
                   <Image
                     src={avatarPreview}
@@ -195,13 +181,15 @@ export default function ProfilePage() {
                 onChange={handleAvatarChange}
                 className="hidden"
               />
-              <span className="text-sm text-gray-500">アイコンを変更</span>
+              {/* ★ 翻訳を適用 */}
+              <span className="text-sm text-gray-500">{t("changeIcon")}</span>
             </div>
 
             {/* ニックネーム編集 */}
             <div>
+              {/* ★ 翻訳を適用 */}
               <label htmlFor="name" className="block text-sm font-bold mb-1">
-                ニックネーム
+                {t("nickname")}
               </label>
               <input
                 type="text"
@@ -209,7 +197,7 @@ export default function ProfilePage() {
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
-                  setIsSuccess(false); // 成功状態をリセット
+                  setIsSuccess(false);
                 }}
                 className="w-full p-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 maxLength={50}
@@ -232,10 +220,12 @@ export default function ProfilePage() {
               ) : isSuccess ? (
                 <>
                   <Check size={20} />
-                  <span>保存しました</span>
+                  {/* ★ 翻訳を適用 */}
+                  <span>{t("saved")}</span>
                 </>
               ) : (
-                <span>保存する</span>
+                // ★ 翻訳を適用
+                <span>{t("save")}</span>
               )}
             </button>
           </form>

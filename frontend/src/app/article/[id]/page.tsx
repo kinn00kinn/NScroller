@@ -51,16 +51,34 @@ export default async function ArticlePage({
 
   // 3. いいね状態をサーバーサイドで取得
   let is_liked = false;
+  let is_bookmarked = false; // ★ ブックマーク状態の変数を追加
   if (user_id) {
-    const { data: likeData } = await supabase
-      .from("user_likes")
-      .select("article_id")
-      .eq("user_id", user_id)
-      .eq("article_id", id)
-      .maybeSingle();
+    // Promise.allで両方の状態を同時に問い合わせる
+    const [likeResult, bookmarkResult] = await Promise.all([
+      // いいね状態のチェック
+      supabase
+        .from("user_likes")
+        .select("article_id")
+        .eq("user_id", user_id)
+        .eq("article_id", id)
+        .maybeSingle(),
 
-    if (likeData) {
+      // ★ ブックマーク状態のチェック (追加)
+      supabase
+        .from("user_bookmarks")
+        .select("article_id")
+        .eq("user_id", user_id)
+        .eq("article_id", id)
+        .maybeSingle(),
+    ]);
+
+    if (likeResult.data) {
       is_liked = true;
+    }
+
+    // ★ ブックマークの結果をセット
+    if (bookmarkResult.data) {
+      is_bookmarked = true;
     }
   }
 
@@ -70,6 +88,7 @@ export default async function ArticlePage({
     id: articleData.id.toString(), // DBのbigintをstringに
     like_num: articleData.like_num || 0,
     is_liked: is_liked,
+    is_bookmarked: is_bookmarked, // ★ 取得した 'ブックマーク' 状態
     comments: [], // コメントはクライアント側(SWR)で取得
   };
 

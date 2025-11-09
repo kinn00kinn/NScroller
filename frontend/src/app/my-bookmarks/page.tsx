@@ -3,13 +3,17 @@
 
 import { useRouter } from "next/navigation";
 import Timeline from "@/app/components/Timeline";
-import { ArrowLeft, Bookmark } from "lucide-react"; // ★ Heart を Bookmark に変更
+import { ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React from "react";
+// ★ useLanguage フックをインポート
+import { useLanguage } from "@/app/components/LanguageProvider";
 
 export default function MyBookmarksPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  // ★ 言語フックを使用
+  const { t } = useLanguage();
 
   if (status === "loading") {
     return <div className="flex justify-center items-center h-screen">...</div>;
@@ -32,20 +36,18 @@ export default function MyBookmarksPage() {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-xl font-bold">ブックマーク</h1> {/* ★ 変更 */}
+            {/* ★ 翻訳を適用 */}
+            <h1 className="text-xl font-bold">{t("myBookmarksTitle")}</h1>
             <p className="text-sm text-gray-500">{session?.user?.name || ""}</p>
           </div>
         </header>
 
         {/* メインタイムライン */}
         <main className="border-x-2 border-b-2 border-black">
-          {/*
-            Timelineコンポーネントを 'myBookmarksOnly' モードで再利用
-          */}
           <Timeline
-            sortMode="recent" // ブックマークした順
+            sortMode="recent"
             myLikesOnly={false}
-            myBookmarksOnly={true} // ★ ここを true に変更
+            myBookmarksOnly={true}
           />
         </main>
       </div>

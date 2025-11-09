@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-
+import { useLanguage } from "@/app/components/LanguageProvider";
 // ...
 type Props = {
   sortMode: "recent" | "recommended"; // ★ "recommended" (mを2つ) に修正
@@ -17,6 +17,7 @@ const inactiveTabStyle =
   "border-b-4 border-transparent text-gray-500 hover:bg-gray-100";
 
 export default function FeedSorter({ sortMode, setSortMode }: Props) {
+  const { t } = useLanguage();
   return (
     <nav className="sticky top-[73px] z-10 flex bg-white/90 backdrop-blur-sm border-b-2 border-black">
       {/* ↑ sticky top-[73px] は、ヘッダーのGIFバナーの高さ(Pando_banner_1000.gif)に
@@ -30,7 +31,7 @@ export default function FeedSorter({ sortMode, setSortMode }: Props) {
           sortMode === "recent" ? activeTabStyle : inactiveTabStyle
         }`}
       >
-        最新
+        {t("recent")}
       </button>
       <div className="w-px bg-black h-auto"></div> {/* 縦の区切り線 */}
       <button
@@ -39,7 +40,7 @@ export default function FeedSorter({ sortMode, setSortMode }: Props) {
           sortMode === "recommended" ? activeTabStyle : inactiveTabStyle
         }`}
       >
-        いいね
+        {t("likes")}
       </button>
     </nav>
   );

@@ -9,13 +9,11 @@ import Image from "next/image";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import {
-  User,
-  X,
-} from "lucide-react";
+import { User, X } from "lucide-react";
 import FeedSorter from "@/app/components/FeedSorter";
 // ★ 1. インポート先を変更
 import InteractiveTutorial from "@/app/components/InteractiveTutorial";
+import { useLanguage } from "@/app/components/LanguageProvider"; // ★ インポート
 
 const TUTORIAL_KEY = "pando_tutorial_shown_v1";
 
@@ -25,6 +23,7 @@ export default function Home() {
   const menuRef = useRef<HTMLDivElement>(null);
   const [sortMode, setSortMode] = useState<"recent" | "recommended">("recent");
   const [showTutorial, setShowTutorial] = useState(false);
+  const { lang, toggleLanguage, t } = useLanguage(); // ★ 言語フックを使用
 
   // ... (handleClickOutside effect) ...
   useEffect(() => {
@@ -138,6 +137,44 @@ export default function Home() {
                 )}
               </div>
               <div className="flex flex-col text-sm">
+                {/* 日本語選択肢 */}
+                <div className="px-3 py-2">
+                  {" "}
+                  {/* 上下の余白を確保するラッパー */}
+                  <div className="flex w-full border-2 border-black rounded-lg overflow-hidden text-center">
+                    {/* 日本語ボタン */}
+                    <button
+                      onClick={() => {
+                        // クリックされたのが 'ja' でない場合のみトグルを実行
+                        if (lang !== "ja") toggleLanguage();
+                      }}
+                      className={`flex-1 py-1 text-sm font-bold transition-colors ${
+                        lang === "ja"
+                          ? "bg-blue-600 text-white" // アクティブ時のハイライト
+                          : "bg-white text-black hover:bg-gray-100" // 非アクティブ時
+                      }`}
+                    >
+                      🇯🇵 日本語
+                    </button>
+                    {/* 仕切り */}
+                    <div className="border-l-2 border-black"></div>
+                    {/* 英語ボタン */}
+                    <button
+                      onClick={() => {
+                        // クリックされたのが 'en' でない場合のみトグルを実行
+                        if (lang !== "en") toggleLanguage();
+                      }}
+                      className={`flex-1 py-1 text-sm font-bold transition-colors ${
+                        lang === "en"
+                          ? "bg-blue-600 text-white" // アクティブ時のハイライト
+                          : "bg-white text-black hover:bg-gray-100" // 非アクティブ時
+                      }`}
+                    >
+                      🇬🇧 English
+                    </button>
+                  </div>
+                </div>
+                {/* ★★★ 言語切り替えここまで ★★★ */}
                 {session && (
                   <Link
                     href="/my-likes"
@@ -152,7 +189,7 @@ export default function Home() {
                       height={18}
                       unoptimized // GIFアニメーションのため
                     />
-                    <span>いいねした投稿</span>
+                    <span>{t("myLikes")}</span>
                   </Link>
                 )}
                 {session && (
@@ -169,7 +206,7 @@ export default function Home() {
                       height={18}
                       unoptimized // GIFアニメーションのため
                     />
-                    <span>ブックマーク</span>
+                    <span>{t("myBookmarks")}</span>
                   </Link>
                 )}
                 {session && (
@@ -185,9 +222,10 @@ export default function Home() {
                       height={18}
                       unoptimized // GIFアニメーションのため
                     />
-                    <span>プロフィール編集</span>
+                    <span>{t("profileEdit")}</span>
                   </Link>
                 )}
+
                 <Link
                   href="/links"
                   onClick={() => setIsMenuOpen(false)}
@@ -200,7 +238,7 @@ export default function Home() {
                     height={18}
                     unoptimized // GIFアニメーションのため
                   />
-                  <span>インフォメーション</span>
+                  <span>{t("information")}</span>
                 </Link>
                 {/* ★ 3. チュートリアル再開ボタンを追加 */}
                 <button
@@ -214,7 +252,7 @@ export default function Home() {
                     height={18}
                     unoptimized // GIFアニメーションのため
                   />
-                  <span>チュートリアル</span>
+                  <span>{t("tutorial")}</span>
                 </button>
                 {session ? (
                   <button
@@ -224,7 +262,7 @@ export default function Home() {
                     }}
                     className="text-left w-full px-3 py-2 hover:bg-gray-100 transition-colors border-t-2 border-black"
                   >
-                    Sign Out
+                    {t("signOut")}
                   </button>
                 ) : (
                   <button
@@ -234,7 +272,7 @@ export default function Home() {
                     }}
                     className="text-left w-full px-3 py-2 hover:bg-gray-100 transition-colors"
                   >
-                    Sign in with Google
+                    {t("signIn")}
                   </button>
                 )}
               </div>

@@ -1,5 +1,4 @@
 // frontend/src/app/article/[id]/ArticleDetailClient.tsx
-// (このファイルを新しく作成してください)
 
 "use client"; // ★ これはクライアントコンポーネント
 
@@ -9,12 +8,54 @@ import type { Article, Comment } from "@/app/lib/mockData";
 import ArticleCard from "@/app/components/ArticleCard";
 import { Loader2, User } from "lucide-react";
 import { useSession } from "next-auth/react";
+// ★ useState をインポート
 import React, { useState } from "react";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
-import { ja } from "date-fns/locale";
+import { useLanguage } from "@/app/components/LanguageProvider";
+// ★ ApiResponse 型をインポート (グローバルキャッシュ更新のため)
+import type { ApiResponse } from "@/app/lib/hook";
 
-// --- コメント投稿フォーム (以前の page.tsx から移動) ---
+// --- アバターフォールバックコンポーネント (変更なし) ---
+function AvatarWithFallback({
+  src,
+  alt,
+  sizePx = 40,
+}: {
+  src: string | null | undefined;
+  alt: string;
+  sizePx?: number;
+}) {
+  const [imgError, setImgError] = useState(false);
+
+  const fallback = (
+    <div
+      className="flex-shrink-0 rounded-full border-2 border-black flex items-center justify-center bg-gray-200"
+      style={{ width: `${sizePx}px`, height: `${sizePx}px` }}
+    >
+      <User size={sizePx * 0.6} className="text-black" />
+    </div>
+  );
+
+  if (!src || imgError) {
+    return fallback;
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={sizePx}
+      height={sizePx}
+      className="flex-shrink-0 rounded-full border-2 border-black object-cover"
+      style={{ width: `${sizePx}px`, height: `${sizePx}px` }}
+      onError={() => setImgError(true)}
+      unoptimized
+    />
+  );
+}
+
+// --- コメント投稿フォーム (変更なし) ---
 function CommentForm({
   articleId,
   onCommentPosted,
@@ -25,6 +66,7 @@ function CommentForm({
   const { data: session, status } = useSession();
   const [text, setText] = useState("");
   const [isPosting, setIsPosting] = useState(false);
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +75,6 @@ function CommentForm({
     setIsPosting(true);
     try {
       const response = await fetch("/api/comments", {
-        // POST /api/comments はそのまま使用
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ article_id: articleId, text: text.trim() }),
@@ -63,7 +104,7 @@ function CommentForm({
   if (status === "unauthenticated")
     return (
       <div className="p-4 border-y-2 border-black text-sm text-gray-600">
-        コメントするにはログインが必要です。
+        {t("loginToComment")}
       </div>
     );
 
@@ -72,24 +113,17 @@ function CommentForm({
       onSubmit={handleSubmit}
       className="p-4 border-y-2 border-black flex space-x-3"
     >
-      {session?.user?.image ? (
-        <Image
-          src={session.user.image}
-          alt="avatar"
-          width={40}
-          height={40}
-          className="rounded-full w-10 h-10 border-2 border-black"
-        />
-      ) : (
-        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center border-2 border-black flex-shrink-0">
-          <User size={20} />
-        </div>
-      )}
+      <AvatarWithFallback
+        src={session?.user?.image}
+        alt={session?.user?.name || "avatar"}
+        sizePx={40}
+      />
+
       <div className="flex-1">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="返信を投稿..."
+          placeholder={t("commentPlaceholder")}
           className="w-full p-2 border-2 border-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           rows={3}
           disabled={isPosting}
@@ -99,16 +133,16 @@ function CommentForm({
           disabled={isPosting || !text.trim()}
           className="mt-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-full disabled:bg-gray-400 hover:bg-blue-700 transition-colors"
         >
-          {isPosting ? "投稿中..." : "返信"}
+          {isPosting ? t("postingComment") : t("postComment")}
         </button>
       </div>
     </form>
   );
 }
 
-// --- コメント一覧 (以前の page.tsx から移動) ---
+// --- コメント一覧 (変更なし) ---
 function CommentList({ articleId }: { articleId: string }) {
-  // ★ GET /api/comments はそのまま使用
+  const { locale, t } = useLanguage();
   const { data, error, mutate } = useSWR(
     `/api/comments?article_id=${articleId}`,
     fetcher
@@ -126,7 +160,7 @@ function CommentList({ articleId }: { articleId: string }) {
   if (error)
     return (
       <div className="p-4 border-b-2 border-black text-red-500">
-        コメントの読み込みに失敗しました。
+        {t("loadCommentsError")}
       </div>
     );
   if (!data)
@@ -137,18 +171,16 @@ function CommentList({ articleId }: { articleId: string }) {
     );
 
   const { comments: rawComments } = data as { comments: Comment[] };
-  // ★ 2. created_at で昇順ソート (古いものが先頭)
-  const comments = rawComments.sort((a, b) => 
-    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  const comments = rawComments.sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
 
   return (
     <div className="flex flex-col">
-      
-
       {comments.length === 0 ? (
         <div className="p-4 border-b-2 border-black text-center text-gray-500">
-          まだコメントはありません。
+          {t("noComments")}
         </div>
       ) : (
         comments.map((comment) => (
@@ -156,19 +188,11 @@ function CommentList({ articleId }: { articleId: string }) {
             key={comment.id}
             className="p-4 border-b-2 border-black flex space-x-3"
           >
-            {comment.user?.image ? (
-              <Image
-                src={comment.user.image}
-                alt={comment.user.name || "avatar"}
-                width={40}
-                height={40}
-                className="rounded-full w-10 h-10 border-2 border-black"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center border-2 border-black flex-shrink-0">
-                <User size={20} />
-              </div>
-            )}
+            <AvatarWithFallback
+              src={comment.user?.image}
+              alt={comment.user?.name || "avatar"}
+              sizePx={40}
+            />
             <div className="flex-1">
               <div className="flex items-center space-x-2">
                 <span className="font-bold">
@@ -177,7 +201,7 @@ function CommentList({ articleId }: { articleId: string }) {
                 <span className="text-sm text-gray-500">
                   {formatDistanceToNow(new Date(comment.created_at), {
                     addSuffix: true,
-                    locale: ja,
+                    locale: locale,
                   })}
                 </span>
               </div>
@@ -196,8 +220,6 @@ function CommentList({ articleId }: { articleId: string }) {
 
 /**
  * クライアントコンポーネント (メイン)
- * サーバーから受け取った初期データを表示し、
- * クライアントサイドでのみ必要な処理（いいね、コメントSWR）を行う
  */
 export default function ArticleDetailClient({
   initialArticle,
@@ -206,22 +228,50 @@ export default function ArticleDetailClient({
 }) {
   const { mutate: globalMutate } = useSWRConfig();
 
-  // いいね成功時のコールバック
-  const handleLikeSuccess = () => {
-    // タイムラインのキャッシュを再検証 (いいねソートやいいね一覧のため)
+  // サーバーから渡された初期データを、クライアント側で状態として持つ
+  const [liveArticle, setLiveArticle] = useState(initialArticle);
+
+  /**
+   * ArticleCard内で楽観的UIが実行されたときに呼ばれるハンドラ
+   * @param articleId 更新された記事のID
+   * @param update 更新するデータ (例: { is_liked: true, like_num: 10 })
+   */
+  const handleOptimisticUpdate = (
+    articleId: string,
+    update: Partial<Article>
+  ) => {
+    // 1. このページのローカルstateを更新 (詳細ページの表示を即時反映)
+    setLiveArticle((prev) => ({
+      ...prev,
+      ...update,
+    }));
+
+    // 2. タイムライン(/api/posts)のSWRグローバルキャッシュも更新
     globalMutate(
       (key: string) => typeof key === "string" && key.startsWith("/api/posts"),
-      undefined,
-      { revalidate: true }
+      (currentData: ApiResponse[] | undefined) => {
+        if (!currentData) return [];
+        // SWRのキャッシュ(data)をイミュータブルに更新
+        return currentData.map((page) => ({
+          ...page,
+          articles: page.articles.map((a) =>
+            a.id === articleId ? { ...a, ...update } : a
+          ),
+        }));
+      },
+      { revalidate: false } // この更新では再取得（revalidate）を行わない
     );
-
-    // (この記事自体のデータは、ArticleCardコンポーネント内の楽観的UIで更新される)
   };
 
   return (
     <>
-      {/* サーバーから受け取った初期データを ArticleCard に渡す */}
-      <ArticleCard article={initialArticle} onLikeSuccess={handleLikeSuccess} />
+      {/* - initialArticle の代わりに liveArticle を渡す
+        - onOptimisticUpdate ハンドラを渡す
+      */}
+      <ArticleCard
+        article={liveArticle}
+        onOptimisticUpdate={handleOptimisticUpdate}
+      />
 
       {/* コメントリスト（SWRでクライアントで取得） */}
       <CommentList articleId={initialArticle.id} />

@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
+import { LanguageProvider } from "./components/LanguageProvider"; // ★ インポート
 
 // --- ★ パンダSNSの基本情報を定義 ---
 const siteTitle = "PanDo (パンドゥ)";
@@ -65,7 +66,9 @@ export default function RootLayout({
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-white text-black`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <LanguageProvider>{children}</LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );
