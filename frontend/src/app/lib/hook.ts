@@ -57,13 +57,26 @@ export function useInfiniteFeed(
       return url;
     }, fetcher);
 
-  // --- 修正: 広告挿入ロジックのみに簡略化 ---
   const items: FeedItem[] = useMemo(() => {
-    // 広告挿入の間隔をランダムにする (例: 3〜7件ごと)
-    const getRandomAdInterval = () => Math.floor(Math.random() * 5) + 3; // 3, 4, 5, 6, 7
+    /**
+     * ★ 決定論的な広告挿入間隔を計算する関数
+     * ページ番号と記事番号に基づいて、3〜7件の間隔を「常に同じ結果」で返します。
+     * (例: 0ページ目の0番目の次は5件後、0ページ目の5番目の次は3件後... というのが固定される)
+     */
+    const getDeterministicAdInterval = (
+      pageIndex: number,
+      articleIndex: number
+    ) => {
+      // ページ番号と記事番号を使った単純な計算
+      const hash = (pageIndex + 1) * 17 + (articleIndex + 1) * 31;
+      // 3〜7の5パターン (3, 4, 5, 6, 7) を循環させる
+      const interval = (hash % 5) + 3;
+      return interval;
+    };
 
     let adCounter = 0;
-    let nextAdInterval = getRandomAdInterval();
+    // ★ 最初の間隔を決定論的に設定 (0, 0 に基づく)
+    let nextAdInterval = getDeterministicAdInterval(0, 0);
 
     return data
       ? data.flatMap((page, pageIndex) => {
@@ -72,23 +85,28 @@ export function useInfiniteFeed(
 
           const feedItems: FeedItem[] = [];
 
-          // ★ shuffleArray は削除 ★
           page.articles.forEach((article, articleIndex) => {
             feedItems.push(article);
 
             adCounter++;
+
+            // 広告を挿入するタイミングかチェック
             if (adCounter >= nextAdInterval) {
               const globalIndex = pageIndex * PAGE_SIZE + articleIndex + 1;
               feedItems.push({ type: "ad", id: `ad-${globalIndex}` });
+
+              // ★ 次の広告挿入間隔も、次の記事の位置に基づいて決定論的に設定
               adCounter = 0;
-              nextAdInterval = getRandomAdInterval();
+              nextAdInterval = getDeterministicAdInterval(
+                pageIndex,
+                articleIndex + 1
+              );
             }
           });
           return feedItems;
         })
       : [];
-  }, [data]);
-  // --- 修正ここまで ---
+  }, [data]); // ★ 依存配列は [data] のままでOKです
 
   const isLoading = isValidating;
   const hasMore = data ? data[data.length - 1]?.hasMore : true;
