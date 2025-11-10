@@ -9,6 +9,7 @@ const LinksPage = () => {
     { href: "links/news", text: "公式からのお知らせ" },
     { href: "links/help", text: "よくある質問 (FAQ)" },
     { href: "links/credits", text: "素材・ライセンス" }, // ★ 新規追加
+    { href: "links/developer", text: "開発者紹介" },
     { href: "links/creator", text: "クリエイター紹介" },
     { href: "links/terms", text: "利用規約" },
     { href: "links/policy", text: "プライバシーポリシー" },
