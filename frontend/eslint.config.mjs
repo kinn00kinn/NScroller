@@ -62,6 +62,7 @@ export default [
       "node_modules/**",
       ".env.local",
       "next-env.d.ts",
+      "**/*.d.ts", // ★ この行を追加 (型定義ファイルを検査対象外にする)
     ],
   },
 ];
