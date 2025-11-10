@@ -31,12 +31,10 @@ const PolicyPage = () => {
               PanDo (パンドゥ)
               （以下「当サービス」といいます）は、ユーザーのプライバシーを尊重し、個人情報の保護に努めています。本プライバシーポリシーは、当サービスの利用に関して、どのような情報を収集し、どのように利用するかを定めたものです。
             </p>
-            
+
             <section>
               <h2 className="text-xl font-bold mb-2">1. 収集する情報</h2>
-              <p>
-                当サービスは、以下の情報を収集します。
-              </p>
+              <p>当サービスは、以下の情報を収集します。</p>
               <ul className="list-disc pl-6 mt-2 space-y-2">
                 <li>
                   <strong>Google認証により提供される情報:</strong>
@@ -59,23 +57,18 @@ const PolicyPage = () => {
                 <li>
                   <strong>アクセス解析情報 (匿名):</strong>
                   <br />
-                  サービス向上のため、Vercel
-                  AnalyticsやGoogle
+                  サービス向上のため、Vercel AnalyticsやGoogle
                   Analyticsなどの第三者ツールを使用し、Cookieを通じて匿名のトラフィックデータ（閲覧ページ、デバイス情報、地域など）を収集する場合があります。
                 </li>
               </ul>
             </section>
-            
+
             <section>
               <h2 className="text-xl font-bold mb-2">2. 情報の利用目的</h2>
-              <p>
-                収集した情報は、以下の目的で利用します。
-              </p>
+              <p>収集した情報は、以下の目的で利用します。</p>
               <ul className="list-disc pl-6 mt-2">
                 <li>ユーザー認証およびアカウント管理のため。</li>
-                <li>
-                  コメント投稿者のニックネームやアイコンを表示するため。
-                </li>
+                <li>コメント投稿者のニックネームやアイコンを表示するため。</li>
                 <li>
                   「いいねした投稿」や「ブックマークした投稿」のリストをユーザーごとに提供するため。
                 </li>
@@ -84,7 +77,7 @@ const PolicyPage = () => {
                 </li>
               </ul>
             </section>
-            
+
             <section>
               <h2 className="text-xl font-bold mb-2">
                 3. 情報の第三者提供および委託
@@ -98,28 +91,26 @@ const PolicyPage = () => {
                   サービスの運営に必要な範囲で、業務委託先に情報の取り扱いを委託する場合。
                   <br />
                   (例: データベースおよびストレージ機能のためにSupabase
-                  Inc.、ホスティングのためにVercel
-                  Inc.、認証のためにGoogle
+                  Inc.、ホスティングのためにVercel Inc.、認証のためにGoogle
                   LLCにデータを保存・処理させる場合)
                 </li>
               </ul>
             </section>
-            
+
             <section>
               <h2 className="text-xl font-bold mb-2">4. ユーザーの権利</h2>
               <p>
                 ユーザーは、当サービスのプロフィール編集ページから、いつでも自身のニックネームとプロフィール画像を更新できます。
-                アカウントの削除や、保存された個人情報（いいね、コメント履歴を含む）の削除を希望される場合は、下記のお問い合わせ窓口までご連絡ください。
               </p>
             </section>
-            
+
             <section>
               <h2 className="text-xl font-bold mb-2">5. 外部リンク</h2>
               <p>
                 当サービスは、外部のニュース記事やブログへのリンクを提供しています。リンク先のウェブサイトにおける個人情報の取り扱いについては、当サービスは責任を負いかねます。リンク先のプライバシーポリシーをご確認ください。
               </p>
             </section>
-            
+
             <section>
               <h2 className="text-xl font-bold mb-2">
                 6. プライバシーポリシーの変更
@@ -128,7 +119,7 @@ const PolicyPage = () => {
                 当サービスは、法令の変更やサービスのアップデートに伴い、本プライバシーポリシーを改定することがあります。重要な変更がある場合は、当ページにてお知らせします。
               </p>
             </section>
-            
+
             <section>
               <h2 className="text-xl font-bold mb-2">7. お問い合わせ</h2>
               <p>
