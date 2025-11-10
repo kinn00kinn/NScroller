@@ -94,7 +94,16 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
     ),
     // インラインコード (code)
     // ★ 3. `node` を削除、`inline` と `children` を分割代入 (TS2339, no-unused-vars, react/prop-types 対策)
-    code: ({ inline, children, ...props }) => {
+    // ★ 修正: TS2339エラーを回避するため、Propsの型をインラインで明示的に定義します
+    code: ({
+      inline,
+      children,
+      ...props
+    }: {
+      inline?: boolean;
+      children?: React.ReactNode;
+      [key: string]: any;
+    }) => {
       return inline ? (
         <code
           {...props}
