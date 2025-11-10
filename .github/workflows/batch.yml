@@ -39,4 +39,5 @@ jobs:
           CUSTOM_SEARCH_CX: ${{ secrets.CUSTOM_SEARCH_CX }}
           NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }} 
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }} 
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }} 
         run: python batch/main.py
