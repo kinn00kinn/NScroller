@@ -9,6 +9,7 @@ import AuthProvider from "./components/AuthProvider";
 import { LanguageProvider } from "./components/LanguageProvider";
 // ★ 2. AnimatePresence をインポート
 import { AnimatePresence } from "framer-motion";
+import GoogleAnalytics from "./components/GoogleAnalytics";
 
 // ★ 3. "use client" にすると `export const metadata` は使えなくなるため、
 //    <head> タグを直接記述します。
@@ -42,6 +43,7 @@ export default function RootLayout({
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-white text-black`}
       >
+        <GoogleAnalytics />
         <AuthProvider>
           <LanguageProvider>
             {/* ★ 5. children を AnimatePresence でラップ */}
