@@ -4,6 +4,8 @@
 
 Next.js (App Router), TypeScript, TailwindCSSで構築されたPanDo (パンドゥ) プロジェクトのフロントエンドです。Supabaseからデータを取得し、認証と「いいね」機能を含む無限スクロールのタイムラインを提供します。
 
+**Project page:** https://kinn-kinn.com/projects/pando/
+
 ## 1\. 主要な機能と実装
 
 このフロントエンドは、見た目以上に多くの機能を実装しています。

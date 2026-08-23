@@ -68,6 +68,16 @@ const AboutPage = () => {
                 <li>パンダ関連の主要な個人ブログやSNS</li>
               </ul>
             </section>
+            <section>
+              <h2 className="text-xl font-bold mb-2">開発について</h2>
+              <p>PanDoはkinn00kinnが開発しています。</p>
+              <a
+                href="https://kinn-kinn.com/projects/pando/"
+                className="text-blue-600 underline"
+              >
+                Project details
+              </a>
+            </section>
           </div>
         </main>
       </div>
